@@ -47,7 +47,7 @@
     "qunit": "^0.9.1",
     "raphael": "^2.1.0",
     "slimerjs": "^0.906.2",
-    "webpack": "*",
+    "webpack": "^1.15.0",
     "webpack-dev-server": "^1.14.1"
   },
   "scripts": {
