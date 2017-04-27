@@ -426,6 +426,7 @@ export class StaveNote extends StemmableNote {
         line: noteProps.line,
       });
 
+
       this.note_heads[i] = notehead;
     }
   }
@@ -491,17 +492,17 @@ export class StaveNote extends StemmableNote {
     }
 
     // Sort the notes from lowest line to highest line
-    lastLine = -Infinity;
-    this.keyProps.forEach(key => {
-      if (key.line < lastLine) {
-        Vex.W(
-          'Unsorted keys in note will be sorted. ' +
-          'See https://github.com/0xfe/vexflow/issues/104 for details.'
-        );
-      }
-      lastLine = key.line;
-    });
-    this.keyProps.sort((a, b) => a.line - b.line);
+    // lastLine = -Infinity;
+    // this.keyProps.forEach(key => {
+    //   if (key.line < lastLine) {
+    //     Vex.W(
+    //       'Unsorted keys in note will be sorted. ' +
+    //       'See https://github.com/0xfe/vexflow/issues/104 for details.'
+    //     );
+    //   }
+    //   lastLine = key.line;
+    // });
+    // this.keyProps.sort((a, b) => a.line - b.line);
   }
 
   // Get the `BoundingBox` for the entire note

@@ -182,6 +182,8 @@ module.exports = (grunt) => {
   grunt.registerTask('default', ['eslint', 'webpack:build', 'concat', 'uglify:build', 'docco']);
   grunt.registerTask('buildLegacy', ['webpack:buildLegacy', 'uglify:buildLegacy']);
   grunt.registerTask('test', 'Run qunit tests.', ['webpack:build', 'concat', 'qunit']);
+  grunt.registerTask('watch', ['eslint', 'webpack:watch', 'uglify:build']);
+  grunt.registerTask('build', ['eslint', 'webpack:build', 'uglify:build']);
 
   // Release current build.
   grunt.registerTask('stage', 'Stage current binaries to releases/.', () => {
