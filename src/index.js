@@ -1,5 +1,6 @@
 // [VexFlow](http://vexflow.com) - Copyright (c) Mohit Muthanna 2010.
 
+
 import { Vex } from './vex';
 import { Flow } from './tables';
 import { Element } from './element';

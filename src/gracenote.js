@@ -17,7 +17,6 @@ export class GraceNote extends StaveNote {
 
     this.slash = note_struct.slash;
     this.slur = true;
-
     this.buildNoteHeads();
 
     this.width = 3;

@@ -198,6 +198,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// [VexFlow](http://vexflow.com) - Copyright (c) Mohit Muthanna 2010.
 	
+	
 	_vex.Vex.Flow = _tables.Flow;
 	_vex.Vex.Flow.Element = _element.Element;
 	_vex.Vex.Flow.Fraction = _fraction.Fraction;
@@ -8139,6 +8140,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'calculateKeyProps',
 	    value: function calculateKeyProps() {
+	      this.keyProps = [];
 	      var lastLine = null;
 	      for (var i = 0; i < this.keys.length; ++i) {
 	        var key = this.keys[i];
@@ -8361,6 +8363,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      return this;
 	    }
+	  }, {
+	    key: 'setKeys',
+	    value: function setKeys(keys) {
+	      this.keys = keys;
+	    }
 	
 	    // Get the pitches in the note
 	
@@ -8549,6 +8556,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function addAccidental(index, accidental) {
 	      return this.addModifier(index, accidental);
 	    }
+	  }, {
+	    key: 'removeAccidental',
+	    value: function removeAccidental(index) {
+	      this.modifiers.splice(index, 1);
+	    }
 	
 	    // Helper function to add an articulation to a key
 	
@@ -8593,7 +8605,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {
 	    key: 'getAccidentals',
 	    value: function getAccidentals() {
-	      return this.modifierContext.getModifiers('accidentals');
+	      return this.modifierContext.getModifiers('accidentals') || [];
 	    }
 	
 	    // Get all dots in the `ModifierContext`
@@ -11291,7 +11303,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	var getGlyphWidth = function getGlyphWidth(glyph) {
 	  return glyph.getMetrics().width;
 	};
-	
 	// An `Accidental` inherits from `Modifier`, and is formatted within a
 	// `ModifierContext`.
 	
@@ -19547,7 +19558,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    _this.slash = note_struct.slash;
 	    _this.slur = true;
-	
 	    _this.buildNoteHeads();
 	
 	    _this.width = 3;

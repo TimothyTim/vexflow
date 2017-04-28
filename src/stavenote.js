@@ -446,6 +446,7 @@ export class StaveNote extends StemmableNote {
 
   // Calculates and stores the properties for each key in the note
   calculateKeyProps() {
+    this.keyProps = [];
     let lastLine = null;
     for (let i = 0; i < this.keys.length; ++i) {
       const key = this.keys[i];
@@ -639,6 +640,10 @@ export class StaveNote extends StemmableNote {
     return this;
   }
 
+  setKeys(keys) {
+    this.keys = keys;
+  }
+
   // Get the pitches in the note
   getKeys() { return this.keys; }
 
@@ -777,6 +782,10 @@ export class StaveNote extends StemmableNote {
     return this.addModifier(index, accidental);
   }
 
+  removeAccidental(index) {
+    this.modifiers.splice(index, 1);
+  }
+
   // Helper function to add an articulation to a key
   addArticulation(index, articulation) {
     return this.addModifier(index, articulation);
@@ -805,7 +814,7 @@ export class StaveNote extends StemmableNote {
 
   // Get all accidentals in the `ModifierContext`
   getAccidentals() {
-    return this.modifierContext.getModifiers('accidentals');
+    return this.modifierContext.getModifiers('accidentals') || [];
   }
 
   // Get all dots in the `ModifierContext`

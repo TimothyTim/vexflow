@@ -20,7 +20,6 @@ import { Glyph } from './glyph';
 function L(...args) { if (Accidental.DEBUG) Vex.L('Vex.Flow.Accidental', args); }
 
 const getGlyphWidth = glyph => glyph.getMetrics().width;
-
 // An `Accidental` inherits from `Modifier`, and is formatted within a
 // `ModifierContext`.
 export class Accidental extends Modifier {

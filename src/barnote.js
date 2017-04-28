@@ -13,6 +13,7 @@ import { Note } from './note';
 import { Barline } from './stavebarline';
 import { BoundingBox } from './boundingbox';
 
+
 // To enable logging for this class. Set `Vex.Flow.BarNote.DEBUG` to `true`.
 function L(...args) { if (BarNote.DEBUG) Vex.L('Vex.Flow.BarNote', args); }
 

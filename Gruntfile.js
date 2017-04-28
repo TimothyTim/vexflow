@@ -179,6 +179,8 @@ module.exports = (grunt) => {
   grunt.loadNpmTasks('grunt-webpack');
 
   // Default task(s).
+  grunt.registerTask('build', ['eslint', 'webpack:build']);
+  grunt.registerTask('watch', ['eslint', 'webpack:watch']);
   grunt.registerTask('default', ['eslint', 'webpack:build', 'concat', 'uglify:build', 'docco']);
   grunt.registerTask('buildLegacy', ['webpack:buildLegacy', 'uglify:buildLegacy']);
   grunt.registerTask('test', 'Run qunit tests.', ['webpack:build', 'concat', 'qunit']);
