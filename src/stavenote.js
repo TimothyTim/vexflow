@@ -424,6 +424,11 @@ export class StaveNote extends StemmableNote {
         glyph_font_scale: this.render_options.glyph_font_scale,
         x_shift: noteProps.shift_right,
         line: noteProps.line,
+        style: {
+          'shadowBlur': 0,
+          'shadowColor': '#8c8c8c',
+          'fillStyle': '#8c8c8c',
+          'strokeStyle': '#8c8c8c' },
       });
 
 

@@ -8112,7 +8112,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	          custom_glyph_code: noteProps.code,
 	          glyph_font_scale: this.render_options.glyph_font_scale,
 	          x_shift: noteProps.shift_right,
-	          line: noteProps.line
+	          line: noteProps.line,
+	          style: {
+	            'shadowBlur': 0,
+	            'shadowColor': '#8c8c8c',
+	            'fillStyle': '#8c8c8c',
+	            'strokeStyle': '#8c8c8c' }
 	        });
 	
 	        this.note_heads[i] = notehead;
