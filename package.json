@@ -1,5 +1,5 @@
 {
-  "name": "vexflow",
+  "name": "vexflow-musie",
   "version": "1.2.84",
   "description": "A JavaScript library for rendering music notation and guitar tablature",
   "main": "build/vexflow-debug.js",
