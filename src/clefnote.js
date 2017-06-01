@@ -86,4 +86,21 @@ export class ClefNote extends Note {
       attachment.renderToStave(abs_x);
     }
   }
+
+  /*
+   * ClefNote Extensions
+   */
+  clone() {
+    const newClef = new Vex.Flow.ClefNote(this.clefKey);
+    newClef.clefKey = this.clefKey;
+    newClef.setTickContext(new Vex.Flow.TickContext());
+    newClef.getTickContext().setX(this.getTickContext().getX());
+    return newClef;
+  }
+
+  getPlayEvents(playInfo) {
+    // update current clef
+    playInfo.clef = this.clefKey;
+    return [];
+  }
 }

@@ -79,4 +79,48 @@ export class BarNote extends Note {
     barline.draw(this.stave);
     this.setRendered();
   }
+
+/*
+   * Barnote Extensions
+   */
+  clone() {
+    const newBarNote = new Vex.Flow.BarNote();
+    newBarNote.setType(this.getType());
+    newBarNote.setStave(this.getStave());
+    newBarNote.setTickContext(this.getTickContext());
+    return newBarNote;
+  }
+
+  getPlayEvents(playInfo, currentEvents) {
+    const newEvents = [];
+
+    function markBeginRepeatIndex() {
+      // mark current index as repeating point
+      playInfo.beginRepeatIndex = currentEvents.length + newEvents.length;
+    }
+
+    function addRepeatEvents() {
+      // Add all events since repeat index
+      for (let i = playInfo.beginRepeatIndex || 0; i < currentEvents.length; i++) {
+        newEvents.push(currentEvents[i]);
+      }
+    }
+
+    switch (this.type) {
+      case Vex.Flow.Barline.type.REPEAT_BEGIN:
+        markBeginRepeatIndex();
+        break;
+      case Vex.Flow.Barline.type.REPEAT_END:
+        addRepeatEvents();
+        break;
+      case Vex.Flow.Barline.type.REPEAT_BOTH:
+        addRepeatEvents();
+        markBeginRepeatIndex();
+        break;
+      default:
+        break;
+    }
+
+    return newEvents;
+  }
 }

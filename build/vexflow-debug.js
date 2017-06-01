@@ -7630,9 +7630,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	exports.StaveNote = undefined;
+	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 	
@@ -7658,7 +7660,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // [VexFlow](http://vexflow.com) - Copyright (c) Mohit Muthanna 2010.
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /* global MIDI */
+	
+	// [VexFlow](http://vexflow.com) - Copyright (c) Mohit Muthanna 2010.
 	//
 	// ## Description
 	// This file implements notes for standard notation. This consists of one or
@@ -7671,1240 +7675,1500 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// To enable logging for this class. Set `Vex.Flow.StaveNote.DEBUG` to `true`.
 	function L() {
-	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	    args[_key] = arguments[_key];
-	  }
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	    }
 	
-	  if (StaveNote.DEBUG) _vex.Vex.L('Vex.Flow.StaveNote', args);
+	    if (StaveNote.DEBUG) _vex.Vex.L('Vex.Flow.StaveNote', args);
 	}
 	
 	var getStemAdjustment = function getStemAdjustment(note) {
-	  return _stem.Stem.WIDTH / (2 * -note.getStemDirection());
+	    return _stem.Stem.WIDTH / (2 * -note.getStemDirection());
 	};
 	
 	var isInnerNoteIndex = function isInnerNoteIndex(note, index) {
-	  return index === (note.getStemDirection() === _stem.Stem.UP ? note.keyProps.length - 1 : 0);
+	    return index === (note.getStemDirection() === _stem.Stem.UP ? note.keyProps.length - 1 : 0);
+	};
+	
+	var ClefOffsets = {
+	    'treble': 0,
+	    'bass': -21,
+	    'alto': -10,
+	    'tenor': -14,
+	    'percussion': 0,
+	    'soprano': -4,
+	    'mezzo-soprano': -7,
+	    'baritone-c': -17,
+	    'baritone-f': -17,
+	    'subbass': -24,
+	    'french': 6
+	};
+	
+	var defaultNoteStyle = {
+	    shadowBlur: 0,
+	    shadowColor: 'black',
+	    fillStyle: 'black',
+	    strokeStyle: 'black'
+	};
+	
+	var highlightNoteStyle = {
+	    shadowBlur: 0,
+	    shadowColor: '#47a3da',
+	    fillStyle: '#47a3da',
+	    strokeStyle: '#47a3da'
+	};
+	var highlightPlayerNoteStyle = {
+	    shadowBlur: 0,
+	    shadowColor: '#94ceef',
+	    fillStyle: '#94ceef',
+	    strokeStyle: '#94ceef'
+	};
+	
+	var highlightKeyStyle = {
+	    shadowBlur: 0,
+	    shadowColor: '#04476d',
+	    fillStyle: '#04476d',
+	    strokeStyle: '#04476d'
 	};
 	
 	// Helper methods for rest positioning in ModifierContext.
 	function shiftRestVertical(rest, note, dir) {
-	  var delta = (note.isrest ? 0.0 : 1.0) * dir;
+	    var delta = (note.isrest ? 0.0 : 1.0) * dir;
 	
-	  rest.line += delta;
-	  rest.maxLine += delta;
-	  rest.minLine += delta;
-	  rest.note.setKeyLine(0, rest.note.getKeyLine(0) + delta);
+	    rest.line += delta;
+	    rest.maxLine += delta;
+	    rest.minLine += delta;
+	    rest.note.setKeyLine(0, rest.note.getKeyLine(0) + delta);
 	}
 	
 	// Called from formatNotes :: center a rest between two notes
 	function centerRest(rest, noteU, noteL) {
-	  var delta = rest.line - _vex.Vex.MidLine(noteU.minLine, noteL.maxLine);
-	  rest.note.setKeyLine(0, rest.note.getKeyLine(0) - delta);
-	  rest.line -= delta;
-	  rest.maxLine -= delta;
-	  rest.minLine -= delta;
+	    var delta = rest.line - _vex.Vex.MidLine(noteU.minLine, noteL.maxLine);
+	    rest.note.setKeyLine(0, rest.note.getKeyLine(0) - delta);
+	    rest.line -= delta;
+	    rest.maxLine -= delta;
+	    rest.minLine -= delta;
 	}
 	
 	var StaveNote = exports.StaveNote = function (_StemmableNote) {
-	  _inherits(StaveNote, _StemmableNote);
+	    _inherits(StaveNote, _StemmableNote);
 	
-	  _createClass(StaveNote, null, [{
-	    key: 'format',
+	    _createClass(StaveNote, null, [{
+	        key: 'format',
 	
 	
-	    // ## Static Methods
-	    //
-	    // Format notes inside a ModifierContext.
-	    value: function format(notes, state) {
-	      if (!notes || notes.length < 2) return false;
-	
-	      // FIXME: VexFlow will soon require that a stave be set before formatting.
-	      // Which, according to the below condition, means that following branch will
-	      // always be taken and the rest of this function is dead code.
-	      //
-	      // Problematically, `Formatter#formatByY` was not designed to work for more
-	      // than 2 voices (although, doesn't throw on this condition, just tries
-	      // to power through).
-	      //
-	      // Based on the above:
-	      //   * 2 voices can be formatted *with or without* a stave being set but
-	      //     the output will be different
-	      //   * 3 voices can only be formatted *without* a stave
-	      if (notes[0].getStave()) {
-	        return StaveNote.formatByY(notes, state);
-	      }
-	
-	      var notesList = [];
-	
-	      for (var i = 0; i < notes.length; i++) {
-	        var props = notes[i].getKeyProps();
-	        var line = props[0].line;
-	        var minL = props[props.length - 1].line;
-	        var stemDirection = notes[i].getStemDirection();
-	        var stemMax = notes[i].getStemLength() / 10;
-	        var stemMin = notes[i].getStemMinumumLength() / 10;
-	
-	        var maxL = void 0;
-	        if (notes[i].isRest()) {
-	          maxL = line + notes[i].glyph.line_above;
-	          minL = line - notes[i].glyph.line_below;
-	        } else {
-	          maxL = stemDirection === 1 ? props[props.length - 1].line + stemMax : props[props.length - 1].line;
-	
-	          minL = stemDirection === 1 ? props[0].line : props[0].line - stemMax;
-	        }
-	
-	        notesList.push({
-	          line: props[0].line, // note/rest base line
-	          maxLine: maxL, // note/rest upper bounds line
-	          minLine: minL, // note/rest lower bounds line
-	          isrest: notes[i].isRest(),
-	          stemDirection: stemDirection,
-	          stemMax: stemMax, // Maximum (default) note stem length;
-	          stemMin: stemMin, // minimum note stem length
-	          voice_shift: notes[i].getVoiceShiftWidth(),
-	          is_displaced: notes[i].isDisplaced(), // note manually displaced
-	          note: notes[i]
-	        });
-	      }
-	
-	      var voices = notesList.length;
-	
-	      var noteU = notesList[0];
-	      var noteM = voices > 2 ? notesList[1] : null;
-	      var noteL = voices > 2 ? notesList[2] : notesList[1];
-	
-	      // for two voice backward compatibility, ensure upper voice is stems up
-	      // for three voices, the voices must be in order (upper, middle, lower)
-	      if (voices === 2 && noteU.stemDirection === -1 && noteL.stemDirection === 1) {
-	        noteU = notesList[1];
-	        noteL = notesList[0];
-	      }
-	
-	      var voiceXShift = Math.max(noteU.voice_shift, noteL.voice_shift);
-	      var xShift = 0;
-	      var stemDelta = void 0;
-	
-	      // Test for two voice note intersection
-	      if (voices === 2) {
-	        var lineSpacing = noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5;
-	        // if top voice is a middle voice, check stem intersection with lower voice
-	        if (noteU.stemDirection === noteL.stemDirection && noteU.minLine <= noteL.maxLine) {
-	          if (!noteU.isrest) {
-	            stemDelta = Math.abs(noteU.line - (noteL.maxLine + 0.5));
-	            stemDelta = Math.max(stemDelta, noteU.stemMin);
-	            noteU.minLine = noteU.line - stemDelta;
-	            noteU.note.setStemLength(stemDelta * 10);
-	          }
-	        }
-	        if (noteU.minLine <= noteL.maxLine + lineSpacing) {
-	          if (noteU.isrest) {
-	            // shift rest up
-	            shiftRestVertical(noteU, noteL, 1);
-	          } else if (noteL.isrest) {
-	            // shift rest down
-	            shiftRestVertical(noteL, noteU, -1);
-	          } else {
-	            xShift = voiceXShift;
-	            if (noteU.stemDirection === noteL.stemDirection) {
-	              // upper voice is middle voice, so shift it right
-	              noteU.note.setXShift(xShift + 3);
-	            } else {
-	              // shift lower voice right
-	              noteL.note.setXShift(xShift);
-	            }
-	          }
-	        }
-	
-	        // format complete
-	        return true;
-	      }
-	
-	      // Check middle voice stem intersection with lower voice
-	      if (noteM !== null && noteM.minLine < noteL.maxLine + 0.5) {
-	        if (!noteM.isrest) {
-	          stemDelta = Math.abs(noteM.line - (noteL.maxLine + 0.5));
-	          stemDelta = Math.max(stemDelta, noteM.stemMin);
-	          noteM.minLine = noteM.line - stemDelta;
-	          noteM.note.setStemLength(stemDelta * 10);
-	        }
-	      }
-	
-	      // For three voices, test if rests can be repositioned
-	      //
-	      // Special case 1 :: middle voice rest between two notes
-	      //
-	      if (noteM.isrest && !noteU.isrest && !noteL.isrest) {
-	        if (noteU.minLine <= noteM.maxLine || noteM.minLine <= noteL.maxLine) {
-	          var restHeight = noteM.maxLine - noteM.minLine;
-	          var space = noteU.minLine - noteL.maxLine;
-	          if (restHeight < space) {
-	            // center middle voice rest between the upper and lower voices
-	            centerRest(noteM, noteU, noteL);
-	          } else {
-	            xShift = voiceXShift + 3; // shift middle rest right
-	            noteM.note.setXShift(xShift);
-	          }
-	          // format complete
-	          return true;
-	        }
-	      }
-	
-	      // Special case 2 :: all voices are rests
-	      if (noteU.isrest && noteM.isrest && noteL.isrest) {
-	        // Shift upper voice rest up
-	        shiftRestVertical(noteU, noteM, 1);
-	        // Shift lower voice rest down
-	        shiftRestVertical(noteL, noteM, -1);
-	        // format complete
-	        return true;
-	      }
-	
-	      // Test if any other rests can be repositioned
-	      if (noteM.isrest && noteU.isrest && noteM.minLine <= noteL.maxLine) {
-	        // Shift middle voice rest up
-	        shiftRestVertical(noteM, noteL, 1);
-	      }
-	      if (noteM.isrest && noteL.isrest && noteU.minLine <= noteM.maxLine) {
-	        // Shift middle voice rest down
-	        shiftRestVertical(noteM, noteU, -1);
-	      }
-	      if (noteU.isrest && noteU.minLine <= noteM.maxLine) {
-	        // shift upper voice rest up;
-	        shiftRestVertical(noteU, noteM, 1);
-	      }
-	      if (noteL.isrest && noteM.minLine <= noteL.maxLine) {
-	        // shift lower voice rest down
-	        shiftRestVertical(noteL, noteM, -1);
-	      }
-	
-	      // If middle voice intersects upper or lower voice
-	      if (!noteU.isrest && !noteM.isrest && noteU.minLine <= noteM.maxLine + 0.5 || !noteM.isrest && !noteL.isrest && noteM.minLine <= noteL.maxLine) {
-	        xShift = voiceXShift + 3; // shift middle note right
-	        noteM.note.setXShift(xShift);
-	      }
-	
-	      return true;
-	    }
-	  }, {
-	    key: 'formatByY',
-	    value: function formatByY(notes, state) {
-	      // NOTE: this function does not support more than two voices per stave
-	      // use with care.
-	      var hasStave = true;
-	
-	      for (var i = 0; i < notes.length; i++) {
-	        hasStave = hasStave && notes[i].getStave() != null;
-	      }
-	
-	      if (!hasStave) {
-	        throw new _vex.Vex.RERR('Stave Missing', 'All notes must have a stave - Vex.Flow.ModifierContext.formatMultiVoice!');
-	      }
-	
-	      var xShift = 0;
-	
-	      for (var _i = 0; _i < notes.length - 1; _i++) {
-	        var topNote = notes[_i];
-	        var bottomNote = notes[_i + 1];
-	
-	        if (topNote.getStemDirection() === _stem.Stem.DOWN) {
-	          topNote = notes[_i + 1];
-	          bottomNote = notes[_i];
-	        }
-	
-	        var topKeys = topNote.getKeyProps();
-	        var bottomKeys = bottomNote.getKeyProps();
-	
-	        var HALF_NOTEHEAD_HEIGHT = 0.5;
-	
-	        // `keyProps` and `stave.getYForLine` have different notions of a `line`
-	        // so we have to convert the keyProps value by subtracting 5.
-	        // See https://github.com/0xfe/vexflow/wiki/Development-Gotchas
+	        // ## Static Methods
 	        //
-	        // We also extend the y for each note by a half notehead because the
-	        // notehead's origin is centered
-	        var topNotBottomY = topNote.getStave().getYForLine(5 - topKeys[0].line + HALF_NOTEHEAD_HEIGHT);
+	        // Format notes inside a ModifierContext.
+	        value: function format(notes, state) {
+	            if (!notes || notes.length < 2) return false;
 	
-	        var bottomNoteTopY = bottomNote.getStave().getYForLine(5 - bottomKeys[bottomKeys.length - 1].line - HALF_NOTEHEAD_HEIGHT);
-	
-	        var areNotesColliding = bottomNoteTopY - topNotBottomY < 0;
-	
-	        if (areNotesColliding) {
-	          xShift = topNote.getVoiceShiftWidth() + 2;
-	          bottomNote.setXShift(xShift);
-	        }
-	      }
-	
-	      state.right_shift += xShift;
-	    }
-	  }, {
-	    key: 'postFormat',
-	    value: function postFormat(notes) {
-	      if (!notes) return false;
-	
-	      notes.forEach(function (note) {
-	        return note.postFormat();
-	      });
-	
-	      return true;
-	    }
-	  }, {
-	    key: 'CATEGORY',
-	    get: function get() {
-	      return 'stavenotes';
-	    }
-	  }, {
-	    key: 'STEM_UP',
-	    get: function get() {
-	      return _stem.Stem.UP;
-	    }
-	  }, {
-	    key: 'STEM_DOWN',
-	    get: function get() {
-	      return _stem.Stem.DOWN;
-	    }
-	  }, {
-	    key: 'DEFAULT_LEDGER_LINE_OFFSET',
-	    get: function get() {
-	      return 3;
-	    }
-	  }]);
-	
-	  function StaveNote(noteStruct) {
-	    _classCallCheck(this, StaveNote);
-	
-	    var _this = _possibleConstructorReturn(this, (StaveNote.__proto__ || Object.getPrototypeOf(StaveNote)).call(this, noteStruct));
-	
-	    _this.setAttribute('type', 'StaveNote');
-	
-	    _this.keys = noteStruct.keys;
-	    _this.clef = noteStruct.clef;
-	    _this.octave_shift = noteStruct.octave_shift;
-	    _this.beam = null;
-	
-	    // Pull note rendering properties
-	    _this.glyph = _tables.Flow.durationToGlyph(_this.duration, _this.noteType);
-	
-	    if (!_this.glyph) {
-	      throw new _vex.Vex.RuntimeError('BadArguments', 'Invalid note initialization data (No glyph found): ' + JSON.stringify(noteStruct));
-	    }
-	
-	    // if true, displace note to right
-	    _this.displaced = false;
-	    _this.dot_shiftY = 0;
-	    // per-pitch properties
-	    _this.keyProps = [];
-	    // for displaced ledger lines
-	    _this.use_default_head_x = false;
-	
-	    // Drawing
-	    _this.note_heads = [];
-	    _this.modifiers = [];
-	
-	    _vex.Vex.Merge(_this.render_options, {
-	      // font size for note heads and rests
-	      glyph_font_scale: noteStruct.glyph_font_scale || _tables.Flow.DEFAULT_NOTATION_FONT_SCALE,
-	      // number of stroke px to the left and right of head
-	      stroke_px: noteStruct.stroke_px || StaveNote.DEFAULT_LEDGER_LINE_OFFSET
-	    });
-	
-	    _this.calculateKeyProps();
-	    _this.buildStem();
-	
-	    // Set the stem direction
-	    if (noteStruct.auto_stem) {
-	      _this.autoStem();
-	    } else {
-	      _this.setStemDirection(noteStruct.stem_direction);
-	    }
-	    _this.reset();
-	    _this.buildFlag();
-	    return _this;
-	  }
-	
-	  _createClass(StaveNote, [{
-	    key: 'reset',
-	    value: function reset() {
-	      var _this2 = this;
-	
-	      _get(StaveNote.prototype.__proto__ || Object.getPrototypeOf(StaveNote.prototype), 'reset', this).call(this);
-	      this.buildNoteHeads();
-	      if (this.stave) {
-	        this.note_heads.forEach(function (head) {
-	          return head.setStave(_this2.stave);
-	        });
-	      }
-	      this.calcExtraPx();
-	    }
-	  }, {
-	    key: 'getCategory',
-	    value: function getCategory() {
-	      return StaveNote.CATEGORY;
-	    }
-	
-	    // Builds a `Stem` for the note
-	
-	  }, {
-	    key: 'buildStem',
-	    value: function buildStem() {
-	      var glyph = this.getGlyph();
-	      var yExtend = glyph.code_head === 'v95' || glyph.code_head === 'v3e' ? -4 : 0;
-	
-	      this.setStem(new _stem.Stem({
-	        yExtend: yExtend,
-	        hide: !!this.isRest()
-	      }));
-	    }
-	
-	    // Builds a `NoteHead` for each key in the note
-	
-	  }, {
-	    key: 'buildNoteHeads',
-	    value: function buildNoteHeads() {
-	      this.note_heads = [];
-	      var stemDirection = this.getStemDirection();
-	      var keys = this.getKeys();
-	
-	      var lastLine = null;
-	      var lineDiff = null;
-	      var displaced = false;
-	
-	      // Draw notes from bottom to top.
-	
-	      // For down-stem notes, we draw from top to bottom.
-	      var start = void 0;
-	      var end = void 0;
-	      var step = void 0;
-	      if (stemDirection === _stem.Stem.UP) {
-	        start = 0;
-	        end = keys.length;
-	        step = 1;
-	      } else if (stemDirection === _stem.Stem.DOWN) {
-	        start = keys.length - 1;
-	        end = -1;
-	        step = -1;
-	      }
-	
-	      for (var i = start; i !== end; i += step) {
-	        var noteProps = this.keyProps[i];
-	        var line = noteProps.line;
-	
-	        // Keep track of last line with a note head, so that consecutive heads
-	        // are correctly displaced.
-	        if (lastLine === null) {
-	          lastLine = line;
-	        } else {
-	          lineDiff = Math.abs(lastLine - line);
-	          if (lineDiff === 0 || lineDiff === 0.5) {
-	            displaced = !displaced;
-	          } else {
-	            displaced = false;
-	            this.use_default_head_x = true;
-	          }
-	        }
-	        lastLine = line;
-	
-	        var notehead = new _notehead.NoteHead({
-	          duration: this.duration,
-	          note_type: this.noteType,
-	          displaced: displaced,
-	          stem_direction: stemDirection,
-	          custom_glyph_code: noteProps.code,
-	          glyph_font_scale: this.render_options.glyph_font_scale,
-	          x_shift: noteProps.shift_right,
-	          line: noteProps.line,
-	          style: {
-	            'shadowBlur': 0,
-	            'shadowColor': '#8c8c8c',
-	            'fillStyle': '#8c8c8c',
-	            'strokeStyle': '#8c8c8c' }
-	        });
-	
-	        this.note_heads[i] = notehead;
-	      }
-	    }
-	
-	    // Automatically sets the stem direction based on the keys in the note
-	
-	  }, {
-	    key: 'autoStem',
-	    value: function autoStem() {
-	      // Figure out optimal stem direction based on given notes
-	      this.minLine = this.keyProps[0].line;
-	      this.maxLine = this.keyProps[this.keyProps.length - 1].line;
-	
-	      var MIDDLE_LINE = 3;
-	      var decider = (this.minLine + this.maxLine) / 2;
-	      var stemDirection = decider < MIDDLE_LINE ? _stem.Stem.UP : _stem.Stem.DOWN;
-	
-	      this.setStemDirection(stemDirection);
-	    }
-	
-	    // Calculates and stores the properties for each key in the note
-	
-	  }, {
-	    key: 'calculateKeyProps',
-	    value: function calculateKeyProps() {
-	      this.keyProps = [];
-	      var lastLine = null;
-	      for (var i = 0; i < this.keys.length; ++i) {
-	        var key = this.keys[i];
-	
-	        // All rests use the same position on the line.
-	        // if (this.glyph.rest) key = this.glyph.position;
-	        if (this.glyph.rest) this.glyph.position = key;
-	
-	        var options = { octave_shift: this.octave_shift || 0 };
-	        var props = _tables.Flow.keyProperties(key, this.clef, options);
-	
-	        if (!props) {
-	          throw new _vex.Vex.RuntimeError('BadArguments', 'Invalid key for note properties: ' + key);
-	        }
-	
-	        // Override line placement for default rests
-	        if (props.key === 'R') {
-	          if (this.duration === '1' || this.duration === 'w') {
-	            props.line = 4;
-	          } else {
-	            props.line = 3;
-	          }
-	        }
-	
-	        // Calculate displacement of this note
-	        var line = props.line;
-	        if (lastLine === null) {
-	          lastLine = line;
-	        } else {
-	          if (Math.abs(lastLine - line) === 0.5) {
-	            this.displaced = true;
-	            props.displaced = true;
-	
-	            // Have to mark the previous note as
-	            // displaced as well, for modifier placement
-	            if (this.keyProps.length > 0) {
-	              this.keyProps[i - 1].displaced = true;
+	            // FIXME: VexFlow will soon require that a stave be set before formatting.
+	            // Which, according to the below condition, means that following branch will
+	            // always be taken and the rest of this function is dead code.
+	            //
+	            // Problematically, `Formatter#formatByY` was not designed to work for more
+	            // than 2 voices (although, doesn't throw on this condition, just tries
+	            // to power through).
+	            //
+	            // Based on the above:
+	            //   * 2 voices can be formatted *with or without* a stave being set but
+	            //     the output will be different
+	            //   * 3 voices can only be formatted *without* a stave
+	            if (notes[0].getStave()) {
+	                return StaveNote.formatByY(notes, state);
 	            }
-	          }
+	
+	            var notesList = [];
+	
+	            for (var i = 0; i < notes.length; i++) {
+	                var props = notes[i].getKeyProps();
+	                var line = props[0].line;
+	                var minL = props[props.length - 1].line;
+	                var stemDirection = notes[i].getStemDirection();
+	                var stemMax = notes[i].getStemLength() / 10;
+	                var stemMin = notes[i].getStemMinumumLength() / 10;
+	
+	                var maxL = void 0;
+	                if (notes[i].isRest()) {
+	                    maxL = line + notes[i].glyph.line_above;
+	                    minL = line - notes[i].glyph.line_below;
+	                } else {
+	                    maxL = stemDirection === 1 ? props[props.length - 1].line + stemMax : props[props.length - 1].line;
+	
+	                    minL = stemDirection === 1 ? props[0].line : props[0].line - stemMax;
+	                }
+	
+	                notesList.push({
+	                    line: props[0].line, // note/rest base line
+	                    maxLine: maxL, // note/rest upper bounds line
+	                    minLine: minL, // note/rest lower bounds line
+	                    isrest: notes[i].isRest(),
+	                    stemDirection: stemDirection,
+	                    stemMax: stemMax, // Maximum (default) note stem length;
+	                    stemMin: stemMin, // minimum note stem length
+	                    voice_shift: notes[i].getVoiceShiftWidth(),
+	                    is_displaced: notes[i].isDisplaced(), // note manually displaced
+	                    note: notes[i]
+	                });
+	            }
+	
+	            var voices = notesList.length;
+	
+	            var noteU = notesList[0];
+	            var noteM = voices > 2 ? notesList[1] : null;
+	            var noteL = voices > 2 ? notesList[2] : notesList[1];
+	
+	            // for two voice backward compatibility, ensure upper voice is stems up
+	            // for three voices, the voices must be in order (upper, middle, lower)
+	            if (voices === 2 && noteU.stemDirection === -1 && noteL.stemDirection === 1) {
+	                noteU = notesList[1];
+	                noteL = notesList[0];
+	            }
+	
+	            var voiceXShift = Math.max(noteU.voice_shift, noteL.voice_shift);
+	            var xShift = 0;
+	            var stemDelta = void 0;
+	
+	            // Test for two voice note intersection
+	            if (voices === 2) {
+	                var lineSpacing = noteU.stemDirection === noteL.stemDirection ? 0.0 : 0.5;
+	                // if top voice is a middle voice, check stem intersection with lower voice
+	                if (noteU.stemDirection === noteL.stemDirection && noteU.minLine <= noteL.maxLine) {
+	                    if (!noteU.isrest) {
+	                        stemDelta = Math.abs(noteU.line - (noteL.maxLine + 0.5));
+	                        stemDelta = Math.max(stemDelta, noteU.stemMin);
+	                        noteU.minLine = noteU.line - stemDelta;
+	                        noteU.note.setStemLength(stemDelta * 10);
+	                    }
+	                }
+	                if (noteU.minLine <= noteL.maxLine + lineSpacing) {
+	                    if (noteU.isrest) {
+	                        // shift rest up
+	                        shiftRestVertical(noteU, noteL, 1);
+	                    } else if (noteL.isrest) {
+	                        // shift rest down
+	                        shiftRestVertical(noteL, noteU, -1);
+	                    } else {
+	                        xShift = voiceXShift;
+	                        if (noteU.stemDirection === noteL.stemDirection) {
+	                            // upper voice is middle voice, so shift it right
+	                            noteU.note.setXShift(xShift + 3);
+	                        } else {
+	                            // shift lower voice right
+	                            noteL.note.setXShift(xShift);
+	                        }
+	                    }
+	                }
+	
+	                // format complete
+	                return true;
+	            }
+	
+	            // Check middle voice stem intersection with lower voice
+	            if (noteM !== null && noteM.minLine < noteL.maxLine + 0.5) {
+	                if (!noteM.isrest) {
+	                    stemDelta = Math.abs(noteM.line - (noteL.maxLine + 0.5));
+	                    stemDelta = Math.max(stemDelta, noteM.stemMin);
+	                    noteM.minLine = noteM.line - stemDelta;
+	                    noteM.note.setStemLength(stemDelta * 10);
+	                }
+	            }
+	
+	            // For three voices, test if rests can be repositioned
+	            //
+	            // Special case 1 :: middle voice rest between two notes
+	            //
+	            if (noteM.isrest && !noteU.isrest && !noteL.isrest) {
+	                if (noteU.minLine <= noteM.maxLine || noteM.minLine <= noteL.maxLine) {
+	                    var restHeight = noteM.maxLine - noteM.minLine;
+	                    var space = noteU.minLine - noteL.maxLine;
+	                    if (restHeight < space) {
+	                        // center middle voice rest between the upper and lower voices
+	                        centerRest(noteM, noteU, noteL);
+	                    } else {
+	                        xShift = voiceXShift + 3; // shift middle rest right
+	                        noteM.note.setXShift(xShift);
+	                    }
+	                    // format complete
+	                    return true;
+	                }
+	            }
+	
+	            // Special case 2 :: all voices are rests
+	            if (noteU.isrest && noteM.isrest && noteL.isrest) {
+	                // Shift upper voice rest up
+	                shiftRestVertical(noteU, noteM, 1);
+	                // Shift lower voice rest down
+	                shiftRestVertical(noteL, noteM, -1);
+	                // format complete
+	                return true;
+	            }
+	
+	            // Test if any other rests can be repositioned
+	            if (noteM.isrest && noteU.isrest && noteM.minLine <= noteL.maxLine) {
+	                // Shift middle voice rest up
+	                shiftRestVertical(noteM, noteL, 1);
+	            }
+	            if (noteM.isrest && noteL.isrest && noteU.minLine <= noteM.maxLine) {
+	                // Shift middle voice rest down
+	                shiftRestVertical(noteM, noteU, -1);
+	            }
+	            if (noteU.isrest && noteU.minLine <= noteM.maxLine) {
+	                // shift upper voice rest up;
+	                shiftRestVertical(noteU, noteM, 1);
+	            }
+	            if (noteL.isrest && noteM.minLine <= noteL.maxLine) {
+	                // shift lower voice rest down
+	                shiftRestVertical(noteL, noteM, -1);
+	            }
+	
+	            // If middle voice intersects upper or lower voice
+	            if (!noteU.isrest && !noteM.isrest && noteU.minLine <= noteM.maxLine + 0.5 || !noteM.isrest && !noteL.isrest && noteM.minLine <= noteL.maxLine) {
+	                xShift = voiceXShift + 3; // shift middle note right
+	                noteM.note.setXShift(xShift);
+	            }
+	
+	            return true;
+	        }
+	    }, {
+	        key: 'formatByY',
+	        value: function formatByY(notes, state) {
+	            // NOTE: this function does not support more than two voices per stave
+	            // use with care.
+	            var hasStave = true;
+	
+	            for (var i = 0; i < notes.length; i++) {
+	                hasStave = hasStave && notes[i].getStave() != null;
+	            }
+	
+	            if (!hasStave) {
+	                throw new _vex.Vex.RERR('Stave Missing', 'All notes must have a stave - Vex.Flow.ModifierContext.formatMultiVoice!');
+	            }
+	
+	            var xShift = 0;
+	
+	            for (var _i = 0; _i < notes.length - 1; _i++) {
+	                var topNote = notes[_i];
+	                var bottomNote = notes[_i + 1];
+	
+	                if (topNote.getStemDirection() === _stem.Stem.DOWN) {
+	                    topNote = notes[_i + 1];
+	                    bottomNote = notes[_i];
+	                }
+	
+	                var topKeys = topNote.getKeyProps();
+	                var bottomKeys = bottomNote.getKeyProps();
+	
+	                var HALF_NOTEHEAD_HEIGHT = 0.5;
+	
+	                // `keyProps` and `stave.getYForLine` have different notions of a `line`
+	                // so we have to convert the keyProps value by subtracting 5.
+	                // See https://github.com/0xfe/vexflow/wiki/Development-Gotchas
+	                //
+	                // We also extend the y for each note by a half notehead because the
+	                // notehead's origin is centered
+	                var topNotBottomY = topNote.getStave().getYForLine(5 - topKeys[0].line + HALF_NOTEHEAD_HEIGHT);
+	
+	                var bottomNoteTopY = bottomNote.getStave().getYForLine(5 - bottomKeys[bottomKeys.length - 1].line - HALF_NOTEHEAD_HEIGHT);
+	
+	                var areNotesColliding = bottomNoteTopY - topNotBottomY < 0;
+	
+	                if (areNotesColliding) {
+	                    xShift = topNote.getVoiceShiftWidth() + 2;
+	                    bottomNote.setXShift(xShift);
+	                }
+	            }
+	
+	            state.right_shift += xShift;
+	        }
+	    }, {
+	        key: 'postFormat',
+	        value: function postFormat(notes) {
+	            if (!notes) return false;
+	
+	            notes.forEach(function (note) {
+	                return note.postFormat();
+	            });
+	
+	            return true;
+	        }
+	    }, {
+	        key: 'CATEGORY',
+	        get: function get() {
+	            return 'stavenotes';
+	        }
+	    }, {
+	        key: 'STEM_UP',
+	        get: function get() {
+	            return _stem.Stem.UP;
+	        }
+	    }, {
+	        key: 'STEM_DOWN',
+	        get: function get() {
+	            return _stem.Stem.DOWN;
+	        }
+	    }, {
+	        key: 'DEFAULT_LEDGER_LINE_OFFSET',
+	        get: function get() {
+	            return 3;
+	        }
+	    }]);
+	
+	    function StaveNote(noteStruct) {
+	        _classCallCheck(this, StaveNote);
+	
+	        var _this = _possibleConstructorReturn(this, (StaveNote.__proto__ || Object.getPrototypeOf(StaveNote)).call(this, noteStruct));
+	
+	        _this.setAttribute('type', 'StaveNote');
+	
+	        _this.keys = noteStruct.keys;
+	        _this.clef = noteStruct.clef;
+	        _this.octave_shift = noteStruct.octave_shift;
+	        _this.beam = null;
+	
+	        // Pull note rendering properties
+	        _this.glyph = _tables.Flow.durationToGlyph(_this.duration, _this.noteType);
+	
+	        if (!_this.glyph) {
+	            throw new _vex.Vex.RuntimeError('BadArguments', 'Invalid note initialization data (No glyph found): ' + JSON.stringify(noteStruct));
 	        }
 	
-	        lastLine = line;
-	        this.keyProps.push(props);
-	      }
+	        // if true, displace note to right
+	        _this.displaced = false;
+	        _this.dot_shiftY = 0;
+	        // per-pitch properties
+	        _this.keyProps = [];
+	        // for displaced ledger lines
+	        _this.use_default_head_x = false;
 	
-	      // Sort the notes from lowest line to highest line
-	      // lastLine = -Infinity;
-	      // this.keyProps.forEach(key => {
-	      //   if (key.line < lastLine) {
-	      //     Vex.W(
-	      //       'Unsorted keys in note will be sorted. ' +
-	      //       'See https://github.com/0xfe/vexflow/issues/104 for details.'
-	      //     );
-	      //   }
-	      //   lastLine = key.line;
-	      // });
-	      // this.keyProps.sort((a, b) => a.line - b.line);
-	    }
+	        // Drawing
+	        _this.note_heads = [];
+	        _this.modifiers = [];
 	
-	    // Get the `BoundingBox` for the entire note
+	        _vex.Vex.Merge(_this.render_options, {
+	            // font size for note heads and rests
+	            glyph_font_scale: noteStruct.glyph_font_scale || _tables.Flow.DEFAULT_NOTATION_FONT_SCALE,
+	            // number of stroke px to the left and right of head
+	            stroke_px: noteStruct.stroke_px || StaveNote.DEFAULT_LEDGER_LINE_OFFSET
+	        });
 	
-	  }, {
-	    key: 'getBoundingBox',
-	    value: function getBoundingBox() {
-	      if (!this.preFormatted) {
-	        throw new _vex.Vex.RERR('UnformattedNote', "Can't call getBoundingBox on an unformatted note.");
-	      }
+	        _this.calculateKeyProps();
+	        _this.buildStem();
 	
-	      var _getMetrics = this.getMetrics(),
-	          w = _getMetrics.width,
-	          modLeftPx = _getMetrics.modLeftPx,
-	          extraLeftPx = _getMetrics.extraLeftPx;
-	
-	      var x = this.getAbsoluteX() - modLeftPx - extraLeftPx;
-	
-	      var minY = 0;
-	      var maxY = 0;
-	      var halfLineSpacing = this.getStave().getSpacingBetweenLines() / 2;
-	      var lineSpacing = halfLineSpacing * 2;
-	
-	      if (this.isRest()) {
-	        var y = this.ys[0];
-	        var frac = _tables.Flow.durationToFraction(this.duration);
-	        if (frac.equals(1) || frac.equals(2)) {
-	          minY = y - halfLineSpacing;
-	          maxY = y + halfLineSpacing;
+	        // Set the stem direction
+	        if (noteStruct.auto_stem) {
+	            _this.autoStem();
 	        } else {
-	          minY = y - this.glyph.line_above * lineSpacing;
-	          maxY = y + this.glyph.line_below * lineSpacing;
+	            _this.setStemDirection(noteStruct.stem_direction);
 	        }
-	      } else if (this.glyph.stem) {
-	        var ys = this.getStemExtents();
-	        ys.baseY += halfLineSpacing * this.stem_direction;
-	        minY = Math.min(ys.topY, ys.baseY);
-	        maxY = Math.max(ys.topY, ys.baseY);
-	      } else {
-	        minY = null;
-	        maxY = null;
+	        _this.reset();
+	        _this.buildFlag();
+	        return _this;
+	    }
 	
-	        for (var i = 0; i < this.ys.length; ++i) {
-	          var yy = this.ys[i];
-	          if (i === 0) {
-	            minY = yy;
-	            maxY = yy;
-	          } else {
-	            minY = Math.min(yy, minY);
-	            maxY = Math.max(yy, maxY);
-	          }
+	    _createClass(StaveNote, [{
+	        key: 'reset',
+	        value: function reset() {
+	            var _this2 = this;
+	
+	            _get(StaveNote.prototype.__proto__ || Object.getPrototypeOf(StaveNote.prototype), 'reset', this).call(this);
+	            this.buildNoteHeads();
+	            if (this.stave) {
+	                this.note_heads.forEach(function (head) {
+	                    return head.setStave(_this2.stave);
+	                });
+	            }
+	            this.calcExtraPx();
 	        }
-	        minY -= halfLineSpacing;
-	        maxY += halfLineSpacing;
-	      }
-	
-	      return new _boundingbox.BoundingBox(x, minY, w, maxY - minY);
-	    }
-	
-	    // Gets the line number of the top or bottom note in the chord.
-	    // If `isTopNote` is `true` then get the top note
-	
-	  }, {
-	    key: 'getLineNumber',
-	    value: function getLineNumber(isTopNote) {
-	      if (!this.keyProps.length) {
-	        throw new _vex.Vex.RERR('NoKeyProps', "Can't get bottom note line, because note is not initialized properly.");
-	      }
-	
-	      var resultLine = this.keyProps[0].line;
-	
-	      // No precondition assumed for sortedness of keyProps array
-	      for (var i = 0; i < this.keyProps.length; i++) {
-	        var thisLine = this.keyProps[i].line;
-	        if (isTopNote) {
-	          if (thisLine > resultLine) resultLine = thisLine;
-	        } else {
-	          if (thisLine < resultLine) resultLine = thisLine;
-	        }
-	      }
-	
-	      return resultLine;
-	    }
-	
-	    // Determine if current note is a rest
-	
-	  }, {
-	    key: 'isRest',
-	    value: function isRest() {
-	      return this.glyph.rest;
-	    }
-	
-	    // Determine if the current note is a chord
-	
-	  }, {
-	    key: 'isChord',
-	    value: function isChord() {
-	      return !this.isRest() && this.keys.length > 1;
-	    }
-	
-	    // Determine if the `StaveNote` has a stem
-	
-	  }, {
-	    key: 'hasStem',
-	    value: function hasStem() {
-	      return this.glyph.stem;
-	    }
-	  }, {
-	    key: 'hasFlag',
-	    value: function hasFlag() {
-	      return _get(StaveNote.prototype.__proto__ || Object.getPrototypeOf(StaveNote.prototype), 'hasFlag', this).call(this) && !this.isRest();
-	    }
-	  }, {
-	    key: 'getStemX',
-	    value: function getStemX() {
-	      if (this.noteType === 'r') {
-	        return this.getCenterGlyphX();
-	      } else {
-	        // We adjust the origin of the stem because we want the stem left-aligned
-	        // with the notehead if stemmed-down, and right-aligned if stemmed-up
-	        return _get(StaveNote.prototype.__proto__ || Object.getPrototypeOf(StaveNote.prototype), 'getStemX', this).call(this) + getStemAdjustment(this);
-	      }
-	    }
-	
-	    // Get the `y` coordinate for text placed on the top/bottom of a
-	    // note at a desired `text_line`
-	
-	  }, {
-	    key: 'getYForTopText',
-	    value: function getYForTopText(textLine) {
-	      var extents = this.getStemExtents();
-	      return Math.min(this.stave.getYForTopText(textLine), extents.topY - this.render_options.annotation_spacing * (textLine + 1));
-	    }
-	  }, {
-	    key: 'getYForBottomText',
-	    value: function getYForBottomText(textLine) {
-	      var extents = this.getStemExtents();
-	      return Math.max(this.stave.getYForTopText(textLine), extents.baseY + this.render_options.annotation_spacing * textLine);
-	    }
-	
-	    // Sets the current note to the provided `stave`. This applies
-	    // `y` values to the `NoteHeads`.
-	
-	  }, {
-	    key: 'setStave',
-	    value: function setStave(stave) {
-	      _get(StaveNote.prototype.__proto__ || Object.getPrototypeOf(StaveNote.prototype), 'setStave', this).call(this, stave);
-	
-	      var ys = this.note_heads.map(function (notehead) {
-	        notehead.setStave(stave);
-	        return notehead.getY();
-	      });
-	
-	      this.setYs(ys);
-	
-	      if (this.stem) {
-	        var _getNoteHeadBounds = this.getNoteHeadBounds(),
-	            y_top = _getNoteHeadBounds.y_top,
-	            y_bottom = _getNoteHeadBounds.y_bottom;
-	
-	        this.stem.setYBounds(y_top, y_bottom);
-	      }
-	
-	      return this;
-	    }
-	  }, {
-	    key: 'setKeys',
-	    value: function setKeys(keys) {
-	      this.keys = keys;
-	    }
-	
-	    // Get the pitches in the note
-	
-	  }, {
-	    key: 'getKeys',
-	    value: function getKeys() {
-	      return this.keys;
-	    }
-	
-	    // Get the properties for all the keys in the note
-	
-	  }, {
-	    key: 'getKeyProps',
-	    value: function getKeyProps() {
-	      return this.keyProps;
-	    }
-	
-	    // Check if note is shifted to the right
-	
-	  }, {
-	    key: 'isDisplaced',
-	    value: function isDisplaced() {
-	      return this.displaced;
-	    }
-	
-	    // Sets whether shift note to the right. `displaced` is a `boolean`
-	
-	  }, {
-	    key: 'setNoteDisplaced',
-	    value: function setNoteDisplaced(displaced) {
-	      this.displaced = displaced;
-	      return this;
-	    }
-	
-	    // Get the starting `x` coordinate for a `StaveTie`
-	
-	  }, {
-	    key: 'getTieRightX',
-	    value: function getTieRightX() {
-	      var tieStartX = this.getAbsoluteX();
-	      tieStartX += this.getGlyphWidth() + this.x_shift + this.extraRightPx;
-	      if (this.modifierContext) tieStartX += this.modifierContext.getExtraRightPx();
-	      return tieStartX;
-	    }
-	
-	    // Get the ending `x` coordinate for a `StaveTie`
-	
-	  }, {
-	    key: 'getTieLeftX',
-	    value: function getTieLeftX() {
-	      var tieEndX = this.getAbsoluteX();
-	      tieEndX += this.x_shift - this.extraLeftPx;
-	      return tieEndX;
-	    }
-	
-	    // Get the stave line on which to place a rest
-	
-	  }, {
-	    key: 'getLineForRest',
-	    value: function getLineForRest() {
-	      var restLine = this.keyProps[0].line;
-	      if (this.keyProps.length > 1) {
-	        var lastLine = this.keyProps[this.keyProps.length - 1].line;
-	        var top = Math.max(restLine, lastLine);
-	        var bot = Math.min(restLine, lastLine);
-	        restLine = _vex.Vex.MidLine(top, bot);
-	      }
-	
-	      return restLine;
-	    }
-	
-	    // Get the default `x` and `y` coordinates for the provided `position`
-	    // and key `index`
-	
-	  }, {
-	    key: 'getModifierStartXY',
-	    value: function getModifierStartXY(position, index) {
-	      if (!this.preFormatted) {
-	        throw new _vex.Vex.RERR('UnformattedNote', "Can't call GetModifierStartXY on an unformatted note");
-	      }
-	
-	      if (this.ys.length === 0) {
-	        throw new _vex.Vex.RERR('NoYValues', 'No Y-Values calculated for this note.');
-	      }
-	
-	      var _Modifier$Position = _modifier.Modifier.Position,
-	          ABOVE = _Modifier$Position.ABOVE,
-	          BELOW = _Modifier$Position.BELOW,
-	          LEFT = _Modifier$Position.LEFT,
-	          RIGHT = _Modifier$Position.RIGHT;
-	
-	      var x = 0;
-	      if (position === LEFT) {
-	        // extra_left_px
-	        // FIXME: What are these magic numbers?
-	        x = -1 * 2;
-	      } else if (position === RIGHT) {
-	        // extra_right_px
-	        // FIXME: What is this magical +2?
-	        x = this.getGlyphWidth() + this.x_shift + 2;
-	
-	        if (this.stem_direction === _stem.Stem.UP && this.hasFlag() && isInnerNoteIndex(this, index)) {
-	          x += this.flag.getMetrics().width;
-	        }
-	      } else if (position === BELOW || position === ABOVE) {
-	        x = this.getGlyphWidth() / 2;
-	      }
-	
-	      return {
-	        x: this.getAbsoluteX() + x,
-	        y: this.ys[index]
-	      };
-	    }
-	
-	    // Sets the style of the complete StaveNote, including all keys
-	    // and the stem.
-	
-	  }, {
-	    key: 'setStyle',
-	    value: function setStyle(style) {
-	      this.note_heads.forEach(function (notehead) {
-	        return notehead.setStyle(style);
-	      });
-	      this.stem.setStyle(style);
-	    }
-	
-	    // Sets the notehead at `index` to the provided coloring `style`.
-	    //
-	    // `style` is an `object` with the following properties: `shadowColor`,
-	    // `shadowBlur`, `fillStyle`, `strokeStyle`
-	
-	  }, {
-	    key: 'setKeyStyle',
-	    value: function setKeyStyle(index, style) {
-	      this.note_heads[index].setStyle(style);
-	      return this;
-	    }
-	  }, {
-	    key: 'setKeyLine',
-	    value: function setKeyLine(index, line) {
-	      this.keyProps[index].line = line;
-	      this.reset();
-	      return this;
-	    }
-	  }, {
-	    key: 'getKeyLine',
-	    value: function getKeyLine(index) {
-	      return this.keyProps[index].line;
-	    }
-	
-	    // Add self to modifier context. `mContext` is the `ModifierContext`
-	    // to be added to.
-	
-	  }, {
-	    key: 'addToModifierContext',
-	    value: function addToModifierContext(mContext) {
-	      this.setModifierContext(mContext);
-	      for (var i = 0; i < this.modifiers.length; ++i) {
-	        this.modifierContext.addModifier(this.modifiers[i]);
-	      }
-	      this.modifierContext.addModifier(this);
-	      this.setPreFormatted(false);
-	      return this;
-	    }
-	
-	    // Generic function to add modifiers to a note
-	    //
-	    // Parameters:
-	    // * `index`: The index of the key that we're modifying
-	    // * `modifier`: The modifier to add
-	
-	  }, {
-	    key: 'addModifier',
-	    value: function addModifier(index, modifier) {
-	      modifier.setNote(this);
-	      modifier.setIndex(index);
-	      this.modifiers.push(modifier);
-	      this.setPreFormatted(false);
-	      return this;
-	    }
-	
-	    // Helper function to add an accidental to a key
-	
-	  }, {
-	    key: 'addAccidental',
-	    value: function addAccidental(index, accidental) {
-	      return this.addModifier(index, accidental);
-	    }
-	  }, {
-	    key: 'removeAccidental',
-	    value: function removeAccidental(index) {
-	      this.modifiers.splice(index, 1);
-	    }
-	
-	    // Helper function to add an articulation to a key
-	
-	  }, {
-	    key: 'addArticulation',
-	    value: function addArticulation(index, articulation) {
-	      return this.addModifier(index, articulation);
-	    }
-	
-	    // Helper function to add an annotation to a key
-	
-	  }, {
-	    key: 'addAnnotation',
-	    value: function addAnnotation(index, annotation) {
-	      return this.addModifier(index, annotation);
-	    }
-	
-	    // Helper function to add a dot on a specific key
-	
-	  }, {
-	    key: 'addDot',
-	    value: function addDot(index) {
-	      var dot = new _dot.Dot();
-	      dot.setDotShiftY(this.glyph.dot_shiftY);
-	      this.dots++;
-	      return this.addModifier(index, dot);
-	    }
-	
-	    // Convenience method to add dot to all keys in note
-	
-	  }, {
-	    key: 'addDotToAll',
-	    value: function addDotToAll() {
-	      for (var i = 0; i < this.keys.length; ++i) {
-	        this.addDot(i);
-	      }
-	      return this;
-	    }
-	
-	    // Get all accidentals in the `ModifierContext`
-	
-	  }, {
-	    key: 'getAccidentals',
-	    value: function getAccidentals() {
-	      return this.modifierContext.getModifiers('accidentals') || [];
-	    }
-	
-	    // Get all dots in the `ModifierContext`
-	
-	  }, {
-	    key: 'getDots',
-	    value: function getDots() {
-	      return this.modifierContext.getModifiers('dots');
-	    }
-	
-	    // Get the width of the note if it is displaced. Used for `Voice`
-	    // formatting
-	
-	  }, {
-	    key: 'getVoiceShiftWidth',
-	    value: function getVoiceShiftWidth() {
-	      // TODO: may need to accomodate for dot here.
-	      return this.getGlyphWidth() * (this.displaced ? 2 : 1);
-	    }
-	
-	    // Calculates and sets the extra pixels to the left or right
-	    // if the note is displaced.
-	
-	  }, {
-	    key: 'calcExtraPx',
-	    value: function calcExtraPx() {
-	      this.setExtraLeftPx(this.displaced && this.stem_direction === _stem.Stem.DOWN ? this.getGlyphWidth() : 0);
-	
-	      // For upstems with flags, the extra space is unnecessary, since it's taken
-	      // up by the flag.
-	      this.setExtraRightPx(!this.hasFlag() && this.displaced && this.stem_direction === _stem.Stem.UP ? this.getGlyphWidth() : 0);
-	    }
-	
-	    // Pre-render formatting
-	
-	  }, {
-	    key: 'preFormat',
-	    value: function preFormat() {
-	      if (this.preFormatted) return;
-	      if (this.modifierContext) this.modifierContext.preFormat();
-	
-	      var width = this.getGlyphWidth() + this.extraLeftPx + this.extraRightPx;
-	
-	      // For upward flagged notes, the width of the flag needs to be added
-	      if (this.glyph.flag && this.beam === null && this.stem_direction === _stem.Stem.UP) {
-	        width += this.getGlyphWidth();
-	      }
-	
-	      this.setWidth(width);
-	      this.setPreFormatted(true);
-	    }
-	
-	    // Gets the staff line and y value for the highest and lowest noteheads
-	
-	  }, {
-	    key: 'getNoteHeadBounds',
-	    value: function getNoteHeadBounds() {
-	      // Top and bottom Y values for stem.
-	      var yTop = null;
-	      var yBottom = null;
-	
-	      var highestLine = this.stave.getNumLines();
-	      var lowestLine = 1;
-	
-	      this.note_heads.forEach(function (notehead) {
-	        var line = notehead.getLine();
-	        var y = notehead.getY();
-	
-	        if (yTop === null || y < yTop) {
-	          yTop = y;
+	    }, {
+	        key: 'getCategory',
+	        value: function getCategory() {
+	            return StaveNote.CATEGORY;
 	        }
 	
-	        if (yBottom === null || y > yBottom) {
-	          yBottom = y;
+	        // Builds a `Stem` for the note
+	
+	    }, {
+	        key: 'buildStem',
+	        value: function buildStem() {
+	            var glyph = this.getGlyph();
+	            var yExtend = glyph.code_head === 'v95' || glyph.code_head === 'v3e' ? -4 : 0;
+	
+	            this.setStem(new _stem.Stem({
+	                yExtend: yExtend,
+	                hide: !!this.isRest()
+	            }));
 	        }
 	
-	        highestLine = line > highestLine ? line : highestLine;
-	        lowestLine = line < lowestLine ? line : lowestLine;
-	      }, this);
+	        // Builds a `NoteHead` for each key in the note
 	
-	      return {
-	        y_top: yTop,
-	        y_bottom: yBottom,
-	        highest_line: highestLine,
-	        lowest_line: lowestLine
-	      };
-	    }
+	    }, {
+	        key: 'buildNoteHeads',
+	        value: function buildNoteHeads() {
+	            this.note_heads = [];
+	            var stemDirection = this.getStemDirection();
+	            var keys = this.getKeys();
 	
-	    // Get the starting `x` coordinate for the noteheads
+	            var lastLine = null;
+	            var lineDiff = null;
+	            var displaced = false;
 	
-	  }, {
-	    key: 'getNoteHeadBeginX',
-	    value: function getNoteHeadBeginX() {
-	      return this.getAbsoluteX() + this.x_shift;
-	    }
+	            // Draw notes from bottom to top.
 	
-	    // Get the ending `x` coordinate for the noteheads
+	            // For down-stem notes, we draw from top to bottom.
+	            var start = void 0;
+	            var end = void 0;
+	            var step = void 0;
+	            if (stemDirection === _stem.Stem.UP) {
+	                start = 0;
+	                end = keys.length;
+	                step = 1;
+	            } else if (stemDirection === _stem.Stem.DOWN) {
+	                start = keys.length - 1;
+	                end = -1;
+	                step = -1;
+	            }
 	
-	  }, {
-	    key: 'getNoteHeadEndX',
-	    value: function getNoteHeadEndX() {
-	      var xBegin = this.getNoteHeadBeginX();
-	      return xBegin + this.getGlyphWidth();
-	    }
+	            for (var i = start; i !== end; i += step) {
+	                var noteProps = this.keyProps[i];
+	                var line = noteProps.line;
 	
-	    // Draw the ledger lines between the stave and the highest/lowest keys
+	                // Keep track of last line with a note head, so that consecutive heads
+	                // are correctly displaced.
+	                if (lastLine === null) {
+	                    lastLine = line;
+	                } else {
+	                    lineDiff = Math.abs(lastLine - line);
+	                    if (lineDiff === 0 || lineDiff === 0.5) {
+	                        displaced = !displaced;
+	                    } else {
+	                        displaced = false;
+	                        this.use_default_head_x = true;
+	                    }
+	                }
+	                lastLine = line;
 	
-	  }, {
-	    key: 'drawLedgerLines',
-	    value: function drawLedgerLines() {
-	      var _this3 = this;
+	                var notehead = new _notehead.NoteHead({
+	                    duration: this.duration,
+	                    note_type: this.noteType,
+	                    displaced: displaced,
+	                    stem_direction: stemDirection,
+	                    custom_glyph_code: noteProps.code,
+	                    glyph_font_scale: this.render_options.glyph_font_scale,
+	                    x_shift: noteProps.shift_right,
+	                    line: noteProps.line,
+	                    style: {
+	                        'shadowBlur': 0,
+	                        'shadowColor': '#8c8c8c',
+	                        'fillStyle': '#8c8c8c',
+	                        'strokeStyle': '#8c8c8c' }
+	                });
 	
-	      var note_heads = this.note_heads,
-	          stave = this.stave,
-	          use_default_head_x = this.use_default_head_x,
-	          x_shift = this.x_shift,
-	          glyph = this.glyph,
-	          stroke_px = this.render_options.stroke_px,
-	          ctx = this.context;
-	
-	
-	      if (this.isRest()) return;
-	      if (!ctx) {
-	        throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
-	      }
-	
-	      var _getNoteHeadBounds2 = this.getNoteHeadBounds(),
-	          highest_line = _getNoteHeadBounds2.highest_line,
-	          lowest_line = _getNoteHeadBounds2.lowest_line;
-	
-	      var headX = note_heads[0].getAbsoluteX();
-	
-	      var drawLedgerLine = function drawLedgerLine(y) {
-	        if (use_default_head_x === true) {
-	          headX = _this3.getAbsoluteX() + x_shift;
+	                this.note_heads[i] = notehead;
+	            }
 	        }
-	        var x = headX - stroke_px;
-	        var length = headX + glyph.getWidth() - headX + stroke_px * 2;
 	
-	        ctx.fillRect(x, y, length, 1);
-	      };
+	        // Automatically sets the stem direction based on the keys in the note
 	
-	      for (var line = 6; line <= highest_line; ++line) {
-	        drawLedgerLine(stave.getYForNote(line));
-	      }
+	    }, {
+	        key: 'autoStem',
+	        value: function autoStem() {
+	            // Figure out optimal stem direction based on given notes
+	            this.minLine = this.keyProps[0].line;
+	            this.maxLine = this.keyProps[this.keyProps.length - 1].line;
 	
-	      for (var _line = 0; _line >= lowest_line; --_line) {
-	        drawLedgerLine(stave.getYForNote(_line));
-	      }
-	    }
+	            var MIDDLE_LINE = 3;
+	            var decider = (this.minLine + this.maxLine) / 2;
+	            var stemDirection = decider < MIDDLE_LINE ? _stem.Stem.UP : _stem.Stem.DOWN;
 	
-	    // Draw all key modifiers
-	
-	  }, {
-	    key: 'drawModifiers',
-	    value: function drawModifiers() {
-	      if (!this.context) {
-	        throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
-	      }
-	
-	      var ctx = this.context;
-	      ctx.openGroup('modifiers');
-	      for (var i = 0; i < this.modifiers.length; i++) {
-	        var modifier = this.modifiers[i];
-	        var notehead = this.note_heads[modifier.getIndex()];
-	        var noteheadStyle = notehead.getStyle();
-	        if (noteheadStyle) {
-	          ctx.save();
-	          notehead.applyStyle(ctx);
+	            this.setStemDirection(stemDirection);
 	        }
-	        modifier.setContext(ctx);
-	        modifier.draw();
-	        if (noteheadStyle) {
-	          ctx.restore();
+	
+	        // Calculates and stores the properties for each key in the note
+	
+	    }, {
+	        key: 'calculateKeyProps',
+	        value: function calculateKeyProps() {
+	            this.keyProps = [];
+	            var lastLine = null;
+	            for (var i = 0; i < this.keys.length; ++i) {
+	                var key = this.keys[i];
+	
+	                // All rests use the same position on the line.
+	                // if (this.glyph.rest) key = this.glyph.position;
+	                if (this.glyph.rest) this.glyph.position = key;
+	
+	                var options = { octave_shift: this.octave_shift || 0 };
+	                var props = _tables.Flow.keyProperties(key, this.clef, options);
+	
+	                if (!props) {
+	                    throw new _vex.Vex.RuntimeError('BadArguments', 'Invalid key for note properties: ' + key);
+	                }
+	
+	                // Override line placement for default rests
+	                if (props.key === 'R') {
+	                    if (this.duration === '1' || this.duration === 'w') {
+	                        props.line = 4;
+	                    } else {
+	                        props.line = 3;
+	                    }
+	                }
+	
+	                // Calculate displacement of this note
+	                var line = props.line;
+	                if (lastLine === null) {
+	                    lastLine = line;
+	                } else {
+	                    if (Math.abs(lastLine - line) === 0.5) {
+	                        this.displaced = true;
+	                        props.displaced = true;
+	
+	                        // Have to mark the previous note as
+	                        // displaced as well, for modifier placement
+	                        if (this.keyProps.length > 0) {
+	                            this.keyProps[i - 1].displaced = true;
+	                        }
+	                    }
+	                }
+	
+	                lastLine = line;
+	                this.keyProps.push(props);
+	            }
+	
+	            // Sort the notes from lowest line to highest line
+	            // lastLine = -Infinity;
+	            // this.keyProps.forEach(key => {
+	            //   if (key.line < lastLine) {
+	            //     Vex.W(
+	            //       'Unsorted keys in note will be sorted. ' +
+	            //       'See https://github.com/0xfe/vexflow/issues/104 for details.'
+	            //     );
+	            //   }
+	            //   lastLine = key.line;
+	            // });
+	            // this.keyProps.sort((a, b) => a.line - b.line);
 	        }
-	      }
-	      ctx.closeGroup();
-	    }
 	
-	    // Draw the flag for the note
+	        // Get the `BoundingBox` for the entire note
 	
-	  }, {
-	    key: 'drawFlag',
-	    value: function drawFlag() {
-	      var stem = this.stem,
-	          beam = this.beam,
-	          ctx = this.context;
+	    }, {
+	        key: 'getBoundingBox',
+	        value: function getBoundingBox() {
+	            if (!this.preFormatted) {
+	                throw new _vex.Vex.RERR('UnformattedNote', "Can't call getBoundingBox on an unformatted note.");
+	            }
+	
+	            var _getMetrics = this.getMetrics(),
+	                w = _getMetrics.width,
+	                modLeftPx = _getMetrics.modLeftPx,
+	                extraLeftPx = _getMetrics.extraLeftPx;
+	
+	            var x = this.getAbsoluteX() - modLeftPx - extraLeftPx;
+	
+	            var minY = 0;
+	            var maxY = 0;
+	            var halfLineSpacing = this.getStave().getSpacingBetweenLines() / 2;
+	            var lineSpacing = halfLineSpacing * 2;
+	
+	            if (this.isRest()) {
+	                var y = this.ys[0];
+	                var frac = _tables.Flow.durationToFraction(this.duration);
+	                if (frac.equals(1) || frac.equals(2)) {
+	                    minY = y - halfLineSpacing;
+	                    maxY = y + halfLineSpacing;
+	                } else {
+	                    minY = y - this.glyph.line_above * lineSpacing;
+	                    maxY = y + this.glyph.line_below * lineSpacing;
+	                }
+	            } else if (this.glyph.stem) {
+	                var ys = this.getStemExtents();
+	                ys.baseY += halfLineSpacing * this.stem_direction;
+	                minY = Math.min(ys.topY, ys.baseY);
+	                maxY = Math.max(ys.topY, ys.baseY);
+	            } else {
+	                minY = null;
+	                maxY = null;
+	
+	                for (var i = 0; i < this.ys.length; ++i) {
+	                    var yy = this.ys[i];
+	                    if (i === 0) {
+	                        minY = yy;
+	                        maxY = yy;
+	                    } else {
+	                        minY = Math.min(yy, minY);
+	                        maxY = Math.max(yy, maxY);
+	                    }
+	                }
+	                minY -= halfLineSpacing;
+	                maxY += halfLineSpacing;
+	            }
+	
+	            return new _boundingbox.BoundingBox(x, minY, w, maxY - minY);
+	        }
+	
+	        // Gets the line number of the top or bottom note in the chord.
+	        // If `isTopNote` is `true` then get the top note
+	
+	    }, {
+	        key: 'getLineNumber',
+	        value: function getLineNumber(isTopNote) {
+	            if (!this.keyProps.length) {
+	                throw new _vex.Vex.RERR('NoKeyProps', "Can't get bottom note line, because note is not initialized properly.");
+	            }
+	
+	            var resultLine = this.keyProps[0].line;
+	
+	            // No precondition assumed for sortedness of keyProps array
+	            for (var i = 0; i < this.keyProps.length; i++) {
+	                var thisLine = this.keyProps[i].line;
+	                if (isTopNote) {
+	                    if (thisLine > resultLine) resultLine = thisLine;
+	                } else {
+	                    if (thisLine < resultLine) resultLine = thisLine;
+	                }
+	            }
+	
+	            return resultLine;
+	        }
+	
+	        // Determine if current note is a rest
+	
+	    }, {
+	        key: 'isRest',
+	        value: function isRest() {
+	            return this.glyph.rest;
+	        }
+	
+	        // Determine if the current note is a chord
+	
+	    }, {
+	        key: 'isChord',
+	        value: function isChord() {
+	            return !this.isRest() && this.keys.length > 1;
+	        }
+	
+	        // Determine if the `StaveNote` has a stem
+	
+	    }, {
+	        key: 'hasStem',
+	        value: function hasStem() {
+	            return this.glyph.stem;
+	        }
+	    }, {
+	        key: 'hasFlag',
+	        value: function hasFlag() {
+	            return _get(StaveNote.prototype.__proto__ || Object.getPrototypeOf(StaveNote.prototype), 'hasFlag', this).call(this) && !this.isRest();
+	        }
+	    }, {
+	        key: 'getStemX',
+	        value: function getStemX() {
+	            if (this.noteType === 'r') {
+	                return this.getCenterGlyphX();
+	            } else {
+	                // We adjust the origin of the stem because we want the stem left-aligned
+	                // with the notehead if stemmed-down, and right-aligned if stemmed-up
+	                return _get(StaveNote.prototype.__proto__ || Object.getPrototypeOf(StaveNote.prototype), 'getStemX', this).call(this) + getStemAdjustment(this);
+	            }
+	        }
+	
+	        // Get the `y` coordinate for text placed on the top/bottom of a
+	        // note at a desired `text_line`
+	
+	    }, {
+	        key: 'getYForTopText',
+	        value: function getYForTopText(textLine) {
+	            var extents = this.getStemExtents();
+	            return Math.min(this.stave.getYForTopText(textLine), extents.topY - this.render_options.annotation_spacing * (textLine + 1));
+	        }
+	    }, {
+	        key: 'getYForBottomText',
+	        value: function getYForBottomText(textLine) {
+	            var extents = this.getStemExtents();
+	            return Math.max(this.stave.getYForTopText(textLine), extents.baseY + this.render_options.annotation_spacing * textLine);
+	        }
+	
+	        // Sets the current note to the provided `stave`. This applies
+	        // `y` values to the `NoteHeads`.
+	
+	    }, {
+	        key: 'setStave',
+	        value: function setStave(stave) {
+	            _get(StaveNote.prototype.__proto__ || Object.getPrototypeOf(StaveNote.prototype), 'setStave', this).call(this, stave);
+	
+	            var ys = this.note_heads.map(function (notehead) {
+	                notehead.setStave(stave);
+	                return notehead.getY();
+	            });
+	
+	            this.setYs(ys);
+	
+	            if (this.stem) {
+	                var _getNoteHeadBounds = this.getNoteHeadBounds(),
+	                    y_top = _getNoteHeadBounds.y_top,
+	                    y_bottom = _getNoteHeadBounds.y_bottom;
+	
+	                this.stem.setYBounds(y_top, y_bottom);
+	            }
+	
+	            return this;
+	        }
+	    }, {
+	        key: 'setKeys',
+	        value: function setKeys(keys) {
+	            this.keys = keys;
+	        }
+	
+	        // Get the pitches in the note
+	
+	    }, {
+	        key: 'getKeys',
+	        value: function getKeys() {
+	            return this.keys;
+	        }
+	
+	        // Get the properties for all the keys in the note
+	
+	    }, {
+	        key: 'getKeyProps',
+	        value: function getKeyProps() {
+	            return this.keyProps;
+	        }
+	
+	        // Check if note is shifted to the right
+	
+	    }, {
+	        key: 'isDisplaced',
+	        value: function isDisplaced() {
+	            return this.displaced;
+	        }
+	
+	        // Sets whether shift note to the right. `displaced` is a `boolean`
+	
+	    }, {
+	        key: 'setNoteDisplaced',
+	        value: function setNoteDisplaced(displaced) {
+	            this.displaced = displaced;
+	            return this;
+	        }
+	
+	        // Get the starting `x` coordinate for a `StaveTie`
+	
+	    }, {
+	        key: 'getTieRightX',
+	        value: function getTieRightX() {
+	            var tieStartX = this.getAbsoluteX();
+	            tieStartX += this.getGlyphWidth() + this.x_shift + this.extraRightPx;
+	            if (this.modifierContext) tieStartX += this.modifierContext.getExtraRightPx();
+	            return tieStartX;
+	        }
+	
+	        // Get the ending `x` coordinate for a `StaveTie`
+	
+	    }, {
+	        key: 'getTieLeftX',
+	        value: function getTieLeftX() {
+	            var tieEndX = this.getAbsoluteX();
+	            tieEndX += this.x_shift - this.extraLeftPx;
+	            return tieEndX;
+	        }
+	
+	        // Get the stave line on which to place a rest
+	
+	    }, {
+	        key: 'getLineForRest',
+	        value: function getLineForRest() {
+	            var restLine = this.keyProps[0].line;
+	            if (this.keyProps.length > 1) {
+	                var lastLine = this.keyProps[this.keyProps.length - 1].line;
+	                var top = Math.max(restLine, lastLine);
+	                var bot = Math.min(restLine, lastLine);
+	                restLine = _vex.Vex.MidLine(top, bot);
+	            }
+	
+	            return restLine;
+	        }
+	
+	        // Get the default `x` and `y` coordinates for the provided `position`
+	        // and key `index`
+	
+	    }, {
+	        key: 'getModifierStartXY',
+	        value: function getModifierStartXY(position, index) {
+	            if (!this.preFormatted) {
+	                throw new _vex.Vex.RERR('UnformattedNote', "Can't call GetModifierStartXY on an unformatted note");
+	            }
+	
+	            if (this.ys.length === 0) {
+	                throw new _vex.Vex.RERR('NoYValues', 'No Y-Values calculated for this note.');
+	            }
+	
+	            var _Modifier$Position = _modifier.Modifier.Position,
+	                ABOVE = _Modifier$Position.ABOVE,
+	                BELOW = _Modifier$Position.BELOW,
+	                LEFT = _Modifier$Position.LEFT,
+	                RIGHT = _Modifier$Position.RIGHT;
+	
+	            var x = 0;
+	            if (position === LEFT) {
+	                // extra_left_px
+	                // FIXME: What are these magic numbers?
+	                x = -1 * 2;
+	            } else if (position === RIGHT) {
+	                // extra_right_px
+	                // FIXME: What is this magical +2?
+	                x = this.getGlyphWidth() + this.x_shift + 2;
+	
+	                if (this.stem_direction === _stem.Stem.UP && this.hasFlag() && isInnerNoteIndex(this, index)) {
+	                    x += this.flag.getMetrics().width;
+	                }
+	            } else if (position === BELOW || position === ABOVE) {
+	                x = this.getGlyphWidth() / 2;
+	            }
+	
+	            return {
+	                x: this.getAbsoluteX() + x,
+	                y: this.ys[index]
+	            };
+	        }
+	
+	        // Sets the style of the complete StaveNote, including all keys
+	        // and the stem.
+	
+	    }, {
+	        key: 'setStyle',
+	        value: function setStyle(style) {
+	            this.note_heads.forEach(function (notehead) {
+	                return notehead.setStyle(style);
+	            });
+	            this.stem.setStyle(style);
+	        }
+	
+	        // Sets the notehead at `index` to the provided coloring `style`.
+	        //
+	        // `style` is an `object` with the following properties: `shadowColor`,
+	        // `shadowBlur`, `fillStyle`, `strokeStyle`
+	
+	    }, {
+	        key: 'setKeyStyle',
+	        value: function setKeyStyle(index, style) {
+	            this.note_heads[index].setStyle(style);
+	            return this;
+	        }
+	    }, {
+	        key: 'setKeyLine',
+	        value: function setKeyLine(index, line) {
+	            this.keyProps[index].line = line;
+	            this.reset();
+	            return this;
+	        }
+	    }, {
+	        key: 'getKeyLine',
+	        value: function getKeyLine(index) {
+	            return this.keyProps[index].line;
+	        }
+	
+	        // Add self to modifier context. `mContext` is the `ModifierContext`
+	        // to be added to.
+	
+	    }, {
+	        key: 'addToModifierContext',
+	        value: function addToModifierContext(mContext) {
+	            this.setModifierContext(mContext);
+	            for (var i = 0; i < this.modifiers.length; ++i) {
+	                this.modifierContext.addModifier(this.modifiers[i]);
+	            }
+	            this.modifierContext.addModifier(this);
+	            this.setPreFormatted(false);
+	            return this;
+	        }
+	
+	        // Generic function to add modifiers to a note
+	        //
+	        // Parameters:
+	        // * `index`: The index of the key that we're modifying
+	        // * `modifier`: The modifier to add
+	
+	    }, {
+	        key: 'addModifier',
+	        value: function addModifier(index, modifier) {
+	            modifier.setNote(this);
+	            modifier.setIndex(index);
+	            this.modifiers.push(modifier);
+	            this.setPreFormatted(false);
+	            return this;
+	        }
+	
+	        // Helper function to add an accidental to a key
+	
+	    }, {
+	        key: 'addAccidental',
+	        value: function addAccidental(index, accidental) {
+	            return this.addModifier(index, accidental);
+	        }
+	    }, {
+	        key: 'removeAccidental',
+	        value: function removeAccidental(index) {
+	            this.modifiers.splice(index, 1);
+	        }
+	
+	        // Helper function to add an articulation to a key
+	
+	    }, {
+	        key: 'addArticulation',
+	        value: function addArticulation(index, articulation) {
+	            return this.addModifier(index, articulation);
+	        }
+	
+	        // Helper function to add an annotation to a key
+	
+	    }, {
+	        key: 'addAnnotation',
+	        value: function addAnnotation(index, annotation) {
+	            return this.addModifier(index, annotation);
+	        }
+	
+	        // Helper function to add a dot on a specific key
+	
+	    }, {
+	        key: 'addDot',
+	        value: function addDot(index) {
+	            var dot = new _dot.Dot();
+	            dot.setDotShiftY(this.glyph.dot_shiftY);
+	            this.dots++;
+	            return this.addModifier(index, dot);
+	        }
+	
+	        // Convenience method to add dot to all keys in note
+	
+	    }, {
+	        key: 'addDotToAll',
+	        value: function addDotToAll() {
+	            for (var i = 0; i < this.keys.length; ++i) {
+	                this.addDot(i);
+	            }
+	            return this;
+	        }
+	
+	        // Get all accidentals in the `ModifierContext`
+	
+	    }, {
+	        key: 'getAccidentals',
+	        value: function getAccidentals() {
+	            return this.modifierContext.getModifiers('accidentals') || [];
+	        }
+	
+	        // Get all dots in the `ModifierContext`
+	
+	    }, {
+	        key: 'getDots',
+	        value: function getDots() {
+	            return this.modifierContext.getModifiers('dots');
+	        }
+	
+	        // Get the width of the note if it is displaced. Used for `Voice`
+	        // formatting
+	
+	    }, {
+	        key: 'getVoiceShiftWidth',
+	        value: function getVoiceShiftWidth() {
+	            // TODO: may need to accomodate for dot here.
+	            return this.getGlyphWidth() * (this.displaced ? 2 : 1);
+	        }
+	
+	        // Calculates and sets the extra pixels to the left or right
+	        // if the note is displaced.
+	
+	    }, {
+	        key: 'calcExtraPx',
+	        value: function calcExtraPx() {
+	            this.setExtraLeftPx(this.displaced && this.stem_direction === _stem.Stem.DOWN ? this.getGlyphWidth() : 0);
+	
+	            // For upstems with flags, the extra space is unnecessary, since it's taken
+	            // up by the flag.
+	            this.setExtraRightPx(!this.hasFlag() && this.displaced && this.stem_direction === _stem.Stem.UP ? this.getGlyphWidth() : 0);
+	        }
+	
+	        // Pre-render formatting
+	
+	    }, {
+	        key: 'preFormat',
+	        value: function preFormat() {
+	            if (this.preFormatted) return;
+	            if (this.modifierContext) this.modifierContext.preFormat();
+	
+	            var width = this.getGlyphWidth() + this.extraLeftPx + this.extraRightPx;
+	
+	            // For upward flagged notes, the width of the flag needs to be added
+	            if (this.glyph.flag && this.beam === null && this.stem_direction === _stem.Stem.UP) {
+	                width += this.getGlyphWidth();
+	            }
+	
+	            this.setWidth(width);
+	            this.setPreFormatted(true);
+	        }
+	
+	        // Gets the staff line and y value for the highest and lowest noteheads
+	
+	    }, {
+	        key: 'getNoteHeadBounds',
+	        value: function getNoteHeadBounds() {
+	            // Top and bottom Y values for stem.
+	            var yTop = null;
+	            var yBottom = null;
+	
+	            var highestLine = this.stave.getNumLines();
+	            var lowestLine = 1;
+	
+	            this.note_heads.forEach(function (notehead) {
+	                var line = notehead.getLine();
+	                var y = notehead.getY();
+	
+	                if (yTop === null || y < yTop) {
+	                    yTop = y;
+	                }
+	
+	                if (yBottom === null || y > yBottom) {
+	                    yBottom = y;
+	                }
+	
+	                highestLine = line > highestLine ? line : highestLine;
+	                lowestLine = line < lowestLine ? line : lowestLine;
+	            }, this);
+	
+	            return {
+	                y_top: yTop,
+	                y_bottom: yBottom,
+	                highest_line: highestLine,
+	                lowest_line: lowestLine
+	            };
+	        }
+	
+	        // Get the starting `x` coordinate for the noteheads
+	
+	    }, {
+	        key: 'getNoteHeadBeginX',
+	        value: function getNoteHeadBeginX() {
+	            return this.getAbsoluteX() + this.x_shift;
+	        }
+	
+	        // Get the ending `x` coordinate for the noteheads
+	
+	    }, {
+	        key: 'getNoteHeadEndX',
+	        value: function getNoteHeadEndX() {
+	            var xBegin = this.getNoteHeadBeginX();
+	            return xBegin + this.getGlyphWidth();
+	        }
+	
+	        // Draw the ledger lines between the stave and the highest/lowest keys
+	
+	    }, {
+	        key: 'drawLedgerLines',
+	        value: function drawLedgerLines() {
+	            var _this3 = this;
+	
+	            var note_heads = this.note_heads,
+	                stave = this.stave,
+	                use_default_head_x = this.use_default_head_x,
+	                x_shift = this.x_shift,
+	                glyph = this.glyph,
+	                stroke_px = this.render_options.stroke_px,
+	                ctx = this.context;
 	
 	
-	      if (!ctx) {
-	        throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
-	      }
+	            if (this.isRest()) return;
+	            if (!ctx) {
+	                throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
+	            }
 	
-	      var shouldRenderFlag = beam === null;
-	      var glyph = this.getGlyph();
+	            var _getNoteHeadBounds2 = this.getNoteHeadBounds(),
+	                highest_line = _getNoteHeadBounds2.highest_line,
+	                lowest_line = _getNoteHeadBounds2.lowest_line;
 	
-	      if (glyph.flag && shouldRenderFlag) {
-	        var _getNoteHeadBounds3 = this.getNoteHeadBounds(),
-	            y_top = _getNoteHeadBounds3.y_top,
-	            y_bottom = _getNoteHeadBounds3.y_bottom;
+	            var headX = note_heads[0].getAbsoluteX();
 	
-	        var noteStemHeight = stem.getHeight();
-	        var flagX = this.getStemX();
-	        // FIXME: What's with the magic +/- 2
-	        var flagY = this.getStemDirection() === _stem.Stem.DOWN
-	        // Down stems have flags on the left
-	        ? y_top - noteStemHeight + 2
-	        // Up stems have flags on the eft.
-	        : y_bottom - noteStemHeight - 2;
+	            var drawLedgerLine = function drawLedgerLine(y) {
+	                if (use_default_head_x === true) {
+	                    headX = _this3.getAbsoluteX() + x_shift;
+	                }
+	                var x = headX - stroke_px;
+	                var length = headX + glyph.getWidth() - headX + stroke_px * 2;
 	
-	        // Draw the Flag
-	        ctx.openGroup('flag', null, { pointerBBox: true });
-	        this.flag.render(ctx, flagX, flagY);
-	        ctx.closeGroup();
-	      }
-	    }
+	                ctx.fillRect(x, y, length, 1);
+	            };
 	
-	    // Draw the NoteHeads
+	            for (var line = 6; line <= highest_line; ++line) {
+	                drawLedgerLine(stave.getYForNote(line));
+	            }
 	
-	  }, {
-	    key: 'drawNoteHeads',
-	    value: function drawNoteHeads() {
-	      var _this4 = this;
+	            for (var _line = 0; _line >= lowest_line; --_line) {
+	                drawLedgerLine(stave.getYForNote(_line));
+	            }
+	        }
 	
-	      this.note_heads.forEach(function (notehead) {
-	        _this4.context.openGroup('notehead', null, { pointerBBox: true });
-	        notehead.setContext(_this4.context).draw();
-	        _this4.context.closeGroup();
-	      });
-	    }
+	        // Draw all key modifiers
 	
-	    // Render the stem onto the canvas
+	    }, {
+	        key: 'drawModifiers',
+	        value: function drawModifiers() {
+	            if (!this.context) {
+	                throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
+	            }
 	
-	  }, {
-	    key: 'drawStem',
-	    value: function drawStem(stemStruct) {
-	      if (!this.context) {
-	        throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
-	      }
+	            var ctx = this.context;
+	            ctx.openGroup('modifiers');
+	            for (var i = 0; i < this.modifiers.length; i++) {
+	                var modifier = this.modifiers[i];
+	                var notehead = this.note_heads[modifier.getIndex()];
+	                var noteheadStyle = notehead.getStyle();
+	                if (noteheadStyle) {
+	                    ctx.save();
+	                    notehead.applyStyle(ctx);
+	                }
+	                modifier.setContext(ctx);
+	                modifier.draw();
+	                if (noteheadStyle) {
+	                    ctx.restore();
+	                }
+	            }
+	            ctx.closeGroup();
+	        }
 	
-	      if (stemStruct) {
-	        this.setStem(new _stem.Stem(stemStruct));
-	      }
+	        // Draw the flag for the note
+	        // drawFlag() {
+	        //   const { stem, beam, context: ctx } = this;
+	        //
+	        //   if (!ctx) {
+	        //     throw new Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
+	        //   }
+	        //
+	        //   const shouldRenderFlag = beam === null;
+	        //   const glyph = this.getGlyph();
+	        //
+	        //   if (glyph.flag && shouldRenderFlag) {
+	        //     const { y_top, y_bottom } = this.getNoteHeadBounds();
+	        //     const noteStemHeight = stem.getHeight();
+	        //     const flagX = this.getStemX();
+	        //     // FIXME: What's with the magic +/- 2
+	        //     const flagY = this.getStemDirection() === Stem.DOWN
+	        //         // Down stems have flags on the left
+	        //         ? y_top - noteStemHeight + 2
+	        //         // Up stems have flags on the eft.
+	        //         : y_bottom - noteStemHeight - 2;
+	        //
+	        //     // Draw the Flag
+	        //     ctx.openGroup('flag', null, { pointerBBox: true });
+	        //     this.flag.render(ctx, flagX, flagY);
+	        //     ctx.closeGroup();
+	        //   }
+	        // }
 	
-	      this.context.openGroup('stem', null, { pointerBBox: true });
-	      this.stem.setContext(this.context).draw();
-	      this.context.closeGroup();
-	    }
+	        /*
+	         * Override the original draw flag to fix the color being drawed
+	         */
 	
-	    // Draws all the `StaveNote` parts. This is the main drawing method.
+	    }, {
+	        key: 'drawFlag',
+	        value: function drawFlag() {
+	            if (!this.context) {
+	                throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
+	            }
 	
-	  }, {
-	    key: 'draw',
-	    value: function draw() {
-	      if (!this.context) {
-	        throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
-	      }
-	      if (!this.stave) {
-	        throw new _vex.Vex.RERR('NoStave', "Can't draw without a stave.");
-	      }
-	      if (this.ys.length === 0) {
-	        throw new _vex.Vex.RERR('NoYValues', "Can't draw note without Y values.");
-	      }
+	            var ctx = this.context;
+	            var glyph = this.getGlyph();
+	            var render_flag = this.beam === null;
+	            var bounds = this.getNoteHeadBounds();
 	
-	      var xBegin = this.getNoteHeadBeginX();
-	      var shouldRenderStem = this.hasStem() && !this.beam;
+	            var x_begin = this.getNoteHeadBeginX();
+	            var x_end = this.getNoteHeadEndX();
 	
-	      // Format note head x positions
-	      this.note_heads.forEach(function (notehead) {
-	        return notehead.setX(xBegin);
-	      });
+	            if (glyph.flag && render_flag) {
+	                var note_stem_height = this.stem.getHeight();
+	                var flag_x = void 0;
+	                var flag_y = void 0;
+	                var flag_code = void 0;
 	
-	      // Format stem x positions
-	      var stemX = this.getStemX();
-	      this.stem.setNoteHeadXBounds(stemX, stemX);
+	                if (this.getStemDirection() === _vex.Vex.Flow.Stem.DOWN) {
+	                    // Down stems have flags on the left.
+	                    flag_x = x_begin + 1;
+	                    flag_y = bounds.y_top - note_stem_height;
+	                    flag_code = glyph.code_flag_downstem;
+	                } else {
+	                    // Up stems have flags on the left.
+	                    flag_x = x_end;
+	                    flag_y = bounds.y_bottom - note_stem_height;
+	                    flag_code = glyph.code_flag_upstem;
+	                }
 	
-	      L('Rendering ', this.isChord() ? 'chord :' : 'note :', this.keys);
+	                // NOTE: The 2 lines below were added to the original code
+	                ctx.attributes.fill = this.note_heads[0].style.fillStyle;
 	
-	      // Draw each part of the note
-	      this.drawLedgerLines();
+	                // Draw the Flag
+	                _vex.Vex.Flow.Glyph.renderGlyph(ctx, flag_x, flag_y, this.render_options.glyph_font_scale, flag_code);
 	
-	      this.setAttribute('el', this.context.openGroup('stavenote', this.getAttribute('id')));
-	      this.context.openGroup('note', null, { pointerBBox: true });
-	      if (shouldRenderStem) this.drawStem();
-	      this.drawNoteHeads();
-	      this.drawFlag();
-	      this.context.closeGroup();
-	      this.drawModifiers();
-	      this.context.closeGroup();
-	      this.setRendered();
-	    }
-	  }]);
+	                // NOTE: The 2 lines below were added to the original code
+	                // Reverting style
+	                ctx.attributes.fill = 'black';
+	            }
+	        }
+	
+	        // Draw the NoteHeads
+	
+	    }, {
+	        key: 'drawNoteHeads',
+	        value: function drawNoteHeads() {
+	            var _this4 = this;
+	
+	            this.note_heads.forEach(function (notehead) {
+	                _this4.context.openGroup('notehead', null, { pointerBBox: true });
+	                notehead.setContext(_this4.context).draw();
+	                _this4.context.closeGroup();
+	            });
+	        }
+	
+	        // Render the stem onto the canvas
+	
+	    }, {
+	        key: 'drawStem',
+	        value: function drawStem(stemStruct) {
+	            if (!this.context) {
+	                throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
+	            }
+	
+	            if (stemStruct) {
+	                this.setStem(new _stem.Stem(stemStruct));
+	            }
+	
+	            this.context.openGroup('stem', null, { pointerBBox: true });
+	            this.stem.setContext(this.context).draw();
+	            this.context.closeGroup();
+	        }
+	
+	        // Draws all the `StaveNote` parts. This is the main drawing method.
+	
+	    }, {
+	        key: 'draw',
+	        value: function draw() {
+	            if (!this.context) {
+	                throw new _vex.Vex.RERR('NoCanvasContext', "Can't draw without a canvas context.");
+	            }
+	            if (!this.stave) {
+	                throw new _vex.Vex.RERR('NoStave', "Can't draw without a stave.");
+	            }
+	            if (this.ys.length === 0) {
+	                throw new _vex.Vex.RERR('NoYValues', "Can't draw note without Y values.");
+	            }
+	
+	            var xBegin = this.getNoteHeadBeginX();
+	            var shouldRenderStem = this.hasStem() && !this.beam;
+	
+	            // Format note head x positions
+	            this.note_heads.forEach(function (notehead) {
+	                return notehead.setX(xBegin);
+	            });
+	
+	            // Format stem x positions
+	            var stemX = this.getStemX();
+	            this.stem.setNoteHeadXBounds(stemX, stemX);
+	
+	            L('Rendering ', this.isChord() ? 'chord :' : 'note :', this.keys);
+	
+	            // Draw each part of the note
+	            this.drawLedgerLines();
+	
+	            this.setAttribute('el', this.context.openGroup('stavenote', this.getAttribute('id')));
+	            this.context.openGroup('note', null, { pointerBBox: true });
+	            if (shouldRenderStem) this.drawStem();
+	            this.drawNoteHeads();
+	            this.drawFlag();
+	            this.context.closeGroup();
+	            this.drawModifiers();
+	            this.context.closeGroup();
+	            this.setRendered();
+	        }
+	    }, {
+	        key: 'setHighlight',
+	        value: function setHighlight(highlight, keyIndex) {
+	            if (highlight === 'player') {
+	                this.setStyle(highlightPlayerNoteStyle);
+	            } else if (highlight) {
+	                this.setStyle(highlightNoteStyle);
+	
+	                if (keyIndex) {
+	                    this.setKeyStyle(keyIndex, highlightKeyStyle);
+	                }
+	            } else {
+	                this.setStyle(defaultNoteStyle);
+	            }
+	        }
+	
+	        // TODO Clone Ties
+	
+	    }, {
+	        key: 'clone',
+	        value: function clone(newProps) {
+	            var currentProps = {
+	                keys: this.keys,
+	                stem_direction: this.getStemDirection(),
+	                duration: this.duration,
+	                noteType: this.noteType
+	            };
+	
+	            var mergedProps = _extends({}, currentProps, newProps);
+	            mergedProps.duration = mergedProps.duration + mergedProps.noteType;
+	
+	            var newNote = new _vex.Vex.Flow.StaveNote(mergedProps);
+	
+	            // Setting the style as the same style as the note head
+	            newNote.setStyle(this.note_heads[0].style);
+	
+	            if (this.modifierContext != null && this.getDots() != null) {
+	                newNote.addDotToAll();
+	            }
+	
+	            newNote.beam = this.beam;
+	
+	            // Clone modifiers
+	            for (var i = 0; i < this.modifiers.length; i++) {
+	                if (this.modifiers[0] instanceof _vex.Vex.Flow.Accidental) {
+	                    newNote.addAccidental(this.modifiers[i].index, new _vex.Vex.Flow.Accidental(this.modifiers[i].type));
+	                }
+	            }
+	
+	            return newNote;
+	        }
+	    }, {
+	        key: 'getPlayEvents',
+	        value: function getPlayEvents(playInfo) {
+	            // Prepare the notes to be sent
+	            var notes = [];
+	
+	            for (var i = 0; i < this.keys.length; i++) {
+	                var key = this.keys[i].replace('/', '');
+	                key = key.replace('#', '');
+	                key = key.replace('#', '');
+	                key = key.replace('b', '');
+	                key = key.replace('b', '');
+	                key = key.replace('n', '');
+	                notes.push(MIDI.keyToNote[key]);
+	            }
+	
+	            // Set clef offset for notes
+	            for (var _i2 = 0; _i2 < notes.length; _i2++) {
+	                notes[_i2] += ClefOffsets[playInfo.clef];
+	            }
+	
+	            var keyPressTime = playInfo.defaultTime / this.duration;
+	
+	            // Set the modifiers for this note (update note value)
+	            for (var _i3 = 0; _i3 < this.modifiers.length; _i3++) {
+	                var modifier = this.modifiers[_i3];
+	                if (modifier instanceof _vex.Vex.Flow.Accidental) {
+	                    var modValue = void 0;
+	
+	                    switch (modifier.type) {
+	                        case 'bb':
+	                            modValue = -2;
+	                            break;
+	                        case 'b':
+	                            modValue = -1;
+	                            break;
+	                        case 'n':
+	                            modValue = 0;
+	                            break;
+	                        case '#':
+	                            modValue = 1;
+	                            break;
+	                        case '##':
+	                            modValue = 2;
+	                            break;
+	                        default:
+	                            break;
+	                    }
+	
+	                    notes[modifier.index] += modValue;
+	                } else if (modifier instanceof _vex.Vex.Flow.Dot) {
+	                    keyPressTime *= 1.5;
+	                }
+	            }
+	
+	            //  velocity is set as 127
+	
+	            var events = [];
+	
+	            events.push({
+	                type: 'channel',
+	                channel: 0,
+	                subtype: notes.length === 1 ? 'noteOn' : 'chordOn',
+	                noteNumber: notes.length === 1 ? notes[0] : notes,
+	                velocity: 127,
+	                queuedTime: playInfo.delay,
+	                note: this
+	            });
+	            events.push({
+	                type: 'channel',
+	                channel: 0,
+	                subtype: notes.length === 1 ? 'noteOff' : 'chordOff',
+	                noteNumber: notes.length === 1 ? notes[0] : notes,
+	                queuedTime: playInfo.delay + keyPressTime,
+	                note: this
+	            });
+	
+	            // increment the delay
+	            playInfo.delay = playInfo.delay + keyPressTime;
+	
+	            return events;
+	        }
+	
+	        // /*
+	        //  * Overriding the Draw method so that the dot stops going up at every draw call
+	        //  */
+	        // draw() {
+	        //     if (!this.context) {
+	        //         throw new Vex.RERR('NoContext', "Can't draw dot without a context.");
+	        //     }
+	        //     if (!(this.note && (this.index != null))) {
+	        //         throw new Vex.RERR('NoAttachedNote', "Can't draw dot without a note and index.");
+	        //     }
+	        //
+	        //     // const line_space = this.note.stave.options.spacing_between_lines_px;
+	        //
+	        //     const start = this.note.getModifierStartXY(this.position, this.index);
+	        //
+	        //     // Set the starting y coordinate to the base of the stem for TabNotes
+	        //     if (this.note.getCategory() === 'tabnotes') {
+	        //         start.y = this.note.getStemExtents().baseY;
+	        //     }
+	        //
+	        //     const dot_x = (start.x + this.x_shift) + this.width - this.radius;
+	        //     // This next commented line is the original Draw
+	        //     // let dot_y = start.y + this.y_shift + (this.dot_shiftY * line_space);
+	        //     // This next line is the modified Draw
+	        //     const dot_y = start.y + this.y_shift;
+	        //     const ctx = this.context;
+	        //
+	        //     ctx.beginPath();
+	        //     ctx.arc(dot_x, dot_y, this.radius, 0, Math.PI * 2, false);
+	        //     ctx.fill();
+	        // }
+	
+	        /*
+	         * Vex.Flow.StaveNote extensions
+	         */
+	        /**
+	         * @param keyName The name of the Key
+	         * @returns the index of the key in the Note, or -1 if it doesn't contain the key
+	         */
+	
+	    }, {
+	        key: 'indexOfKey',
+	        value: function indexOfKey(keyName) {
+	            return this.keys.indexOf(keyName);
+	        }
+	    }]);
 
-	  return StaveNote;
+	    return StaveNote;
 	}(_stemmablenote.StemmableNote);
 
 /***/ }),
@@ -15377,6 +15641,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	      space_above_staff_ln: 4, // in staff lines
 	      space_below_staff_ln: 4, // in staff lines
 	      top_text_position: 1 };
+	    _this.tickables = [];
+	    _this.beams = [];
 	    _this.bounds = { x: _this.x, y: _this.y, w: _this.width, h: 0 };
 	    _vex.Vex.Merge(_this.options, options);
 	
@@ -16075,6 +16341,174 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.options.line_config = lines_configuration;
 	
 	      return this;
+	    }
+	
+	    /*
+	     * Vex.Flow.Stave extensions
+	     */
+	
+	  }, {
+	    key: 'setTickables',
+	    value: function setTickables(tickables) {
+	      this.tickables = tickables;
+	    }
+	  }, {
+	    key: 'getTickables',
+	    value: function getTickables() {
+	      return this.tickables;
+	    }
+	  }, {
+	    key: 'getNotes',
+	    value: function getNotes() {
+	      var notes = [];
+	
+	      for (var i = 0; i < this.tickables.length; i++) {
+	        var tickable = this.tickables[i];
+	        if (tickable instanceof _vex.Vex.Flow.StaveNote) {
+	          notes.push(tickable);
+	        }
+	      }
+	
+	      return notes;
+	    }
+	  }, {
+	    key: 'insertTickableBetween',
+	    value: function insertTickableBetween(newTickable, previousTickable, nextTickable) {
+	      if (newTickable instanceof _vex.Vex.Flow.ClefNote) {
+	        // If the stave has no clef modifiers, then add it.
+	        if (this.getClefModifierIndex() < 0) {
+	          this.addClef(newTickable.clefKey);
+	          // If the stave already has a clef, but the user clicked before any
+	          // other tickable, then replace the stave clef
+	          return;
+	        } else if (previousTickable == null) {
+	          this.replaceClef(newTickable.clefKey);
+	          // Else add it as a normal ClefNote as long as the stave already has
+	          // notes, so leave otherwise
+	          return;
+	        } else if (this.getNotes().length === 0) {
+	          return;
+	        }
+	      } else if (newTickable instanceof _vex.Vex.Flow.BarNote) {
+	        // If the BarNote is to be inserted after everything, then modify the end bar of the stave
+	        if (nextTickable == null) {
+	          this.setEndBarType(newTickable.type);
+	          // Else add it as a normal BarNote as long as the stave already has notes, so leave
+	          // otherwise
+	          return;
+	        } else if (this.getNotes().length === 0) {
+	          return;
+	        }
+	      }
+	
+	      if (nextTickable == null) {
+	        this.pushTickable(newTickable);
+	      } else {
+	        var referenceIndex = this.tickables.indexOf(nextTickable);
+	        this.tickables.splice(referenceIndex, 0, newTickable);
+	      }
+	    }
+	  }, {
+	    key: 'getClefModifierIndex',
+	    value: function getClefModifierIndex() {
+	      // Remove all clefs currently in the stave
+	      for (var i = 0; i < this.modifiers.length; i++) {
+	        var modifier = this.modifiers[i];
+	
+	        if (modifier instanceof _vex.Vex.Flow.Clef) {
+	          return i;
+	        }
+	      }
+	
+	      return -1;
+	    }
+	  }, {
+	    key: 'replaceClef',
+	    value: function replaceClef(clef) {
+	      var start_X = this.start_x;
+	      this.clef = clef;
+	      // const modifier = new Vex.Flow.Clef(clef);
+	      this.modifiers.splice(this.getClefModifierIndex(), 1);
+	      this.glyphs = [];
+	      this.addClef(clef);
+	
+	      this.start_x = start_X;
+	    }
+	  }, {
+	    key: 'getPreviousTickable',
+	    value: function getPreviousTickable(referenceTickable) {
+	      var referenceIndex = this.tickables.indexOf(referenceTickable);
+	      if (referenceIndex === 0) {
+	        return null;
+	      }
+	
+	      return this.tickables[referenceIndex - 1];
+	    }
+	  }, {
+	    key: 'getNextTickable',
+	    value: function getNextTickable(referenceTickable) {
+	      var referenceIndex = this.tickables.indexOf(referenceTickable);
+	      if (referenceIndex === this.tickables.length - 1) {
+	        return null;
+	      }
+	
+	      return this.tickables[referenceIndex + 1];
+	    }
+	  }, {
+	    key: 'getNextNote',
+	    value: function getNextNote(referenceNote) {
+	      var referenceIndex = this.tickables.indexOf(referenceNote);
+	      while (referenceIndex < this.tickables.length) {
+	        referenceIndex++;
+	        if (this.tickables[referenceIndex] instanceof _vex.Vex.Flow.StaveNote) {
+	          return this.tickables[referenceIndex];
+	        }
+	      }
+	
+	      return null;
+	    }
+	  }, {
+	    key: 'replaceTickable',
+	    value: function replaceTickable(oldTickable, newTickable) {
+	      // Replacing note in beam.
+	      if (oldTickable.beam != null) {
+	        var beam = oldTickable.beam;
+	        var _referenceIndex = beam.tickables.indexOf(oldTickable);
+	        beam.notes[_referenceIndex] = newTickable;
+	      }
+	
+	      var referenceIndex = this.tickables.indexOf(oldTickable);
+	      this.tickables[referenceIndex] = newTickable;
+	    }
+	  }, {
+	    key: 'removeTickable',
+	    value: function removeTickable(tickable) {
+	      this.tickables.splice(this.tickables.indexOf(tickable), 1);
+	    }
+	  }, {
+	    key: 'removeAllTickables',
+	    value: function removeAllTickables() {
+	      this.tickables = [];
+	    }
+	  }, {
+	    key: 'pushTickable',
+	    value: function pushTickable(newTickable) {
+	      this.tickables.push(newTickable);
+	    }
+	  }, {
+	    key: 'setBeams',
+	    value: function setBeams(beamList) {
+	      this.beams = beamList;
+	    }
+	  }, {
+	    key: 'getBeams',
+	    value: function getBeams() {
+	      return this.beams;
+	    }
+	  }, {
+	    key: 'pushBeam',
+	    value: function pushBeam(newBeam) {
+	      this.beams.push(newBeam);
 	    }
 	  }]);
 
@@ -19292,6 +19726,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	        attachment.renderToStave(abs_x);
 	      }
 	    }
+	
+	    /*
+	     * ClefNote Extensions
+	     */
+	
+	  }, {
+	    key: 'clone',
+	    value: function clone() {
+	      var newClef = new _vex.Vex.Flow.ClefNote(this.clefKey);
+	      newClef.clefKey = this.clefKey;
+	      newClef.setTickContext(new _vex.Vex.Flow.TickContext());
+	      newClef.getTickContext().setX(this.getTickContext().getX());
+	      return newClef;
+	    }
+	  }, {
+	    key: 'getPlayEvents',
+	    value: function getPlayEvents(playInfo) {
+	      // update current clef
+	      playInfo.clef = this.clefKey;
+	      return [];
+	    }
 	  }]);
 
 	  return ClefNote;
@@ -21641,6 +22096,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	      barline.setX(this.getAbsoluteX());
 	      barline.draw(this.stave);
 	      this.setRendered();
+	    }
+	
+	    /*
+	       * Barnote Extensions
+	       */
+	
+	  }, {
+	    key: 'clone',
+	    value: function clone() {
+	      var newBarNote = new _vex.Vex.Flow.BarNote();
+	      newBarNote.setType(this.getType());
+	      newBarNote.setStave(this.getStave());
+	      newBarNote.setTickContext(this.getTickContext());
+	      return newBarNote;
+	    }
+	  }, {
+	    key: 'getPlayEvents',
+	    value: function getPlayEvents(playInfo, currentEvents) {
+	      var newEvents = [];
+	
+	      function markBeginRepeatIndex() {
+	        // mark current index as repeating point
+	        playInfo.beginRepeatIndex = currentEvents.length + newEvents.length;
+	      }
+	
+	      function addRepeatEvents() {
+	        // Add all events since repeat index
+	        for (var i = playInfo.beginRepeatIndex || 0; i < currentEvents.length; i++) {
+	          newEvents.push(currentEvents[i]);
+	        }
+	      }
+	
+	      switch (this.type) {
+	        case _vex.Vex.Flow.Barline.type.REPEAT_BEGIN:
+	          markBeginRepeatIndex();
+	          break;
+	        case _vex.Vex.Flow.Barline.type.REPEAT_END:
+	          addRepeatEvents();
+	          break;
+	        case _vex.Vex.Flow.Barline.type.REPEAT_BOTH:
+	          addRepeatEvents();
+	          markBeginRepeatIndex();
+	          break;
+	        default:
+	          break;
+	      }
+	
+	      return newEvents;
 	    }
 	  }]);
 

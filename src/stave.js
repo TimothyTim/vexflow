@@ -46,6 +46,8 @@ export class Stave extends Element {
       space_below_staff_ln: 4,      // in staff lines
       top_text_position: 1,          // in staff lines
     };
+    this.tickables = [];
+    this.beams = [];
     this.bounds = { x: this.x, y: this.y, w: this.width, h: 0 };
     Vex.Merge(this.options, options);
 
@@ -637,5 +639,156 @@ export class Stave extends Element {
     this.options.line_config = lines_configuration;
 
     return this;
+  }
+
+  /*
+   * Vex.Flow.Stave extensions
+   */
+
+  setTickables(tickables) {
+    this.tickables = tickables;
+  }
+
+  getTickables() {
+    return this.tickables;
+  }
+
+  getNotes() {
+    const notes = [];
+
+    for (let i = 0; i < this.tickables.length; i++) {
+      const tickable = this.tickables[i];
+      if (tickable instanceof Vex.Flow.StaveNote) {
+        notes.push(tickable);
+      }
+    }
+
+    return notes;
+  }
+
+  insertTickableBetween(newTickable, previousTickable, nextTickable) {
+    if (newTickable instanceof Vex.Flow.ClefNote) {
+      // If the stave has no clef modifiers, then add it.
+      if (this.getClefModifierIndex() < 0) {
+        this.addClef(newTickable.clefKey);
+        // If the stave already has a clef, but the user clicked before any
+        // other tickable, then replace the stave clef
+        return;
+      } else if (previousTickable == null) {
+        this.replaceClef(newTickable.clefKey);
+        // Else add it as a normal ClefNote as long as the stave already has
+        // notes, so leave otherwise
+        return;
+      } else if (this.getNotes().length === 0) {
+        return;
+      }
+    } else if (newTickable instanceof Vex.Flow.BarNote) {
+      // If the BarNote is to be inserted after everything, then modify the end bar of the stave
+      if (nextTickable == null) {
+        this.setEndBarType(newTickable.type);
+        // Else add it as a normal BarNote as long as the stave already has notes, so leave
+        // otherwise
+        return;
+      } else if (this.getNotes().length === 0) {
+        return;
+      }
+    }
+
+    if (nextTickable == null) {
+      this.pushTickable(newTickable);
+    } else {
+      const referenceIndex = this.tickables.indexOf(nextTickable);
+      this.tickables.splice(referenceIndex, 0, newTickable);
+    }
+  }
+
+  getClefModifierIndex() {
+    // Remove all clefs currently in the stave
+    for (let i = 0; i < this.modifiers.length; i++) {
+      const modifier = this.modifiers[i];
+
+      if (modifier instanceof Vex.Flow.Clef) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  replaceClef(clef) {
+    const start_X = this.start_x;
+    this.clef = clef;
+    // const modifier = new Vex.Flow.Clef(clef);
+    this.modifiers.splice(this.getClefModifierIndex(), 1);
+    this.glyphs = [];
+    this.addClef(clef);
+
+    this.start_x = start_X;
+  }
+
+  getPreviousTickable(referenceTickable) {
+    const referenceIndex = this.tickables.indexOf(referenceTickable);
+    if (referenceIndex === 0) {
+      return null;
+    }
+
+    return this.tickables[referenceIndex - 1];
+  }
+
+  getNextTickable(referenceTickable) {
+    const referenceIndex = this.tickables.indexOf(referenceTickable);
+    if (referenceIndex === this.tickables.length - 1) {
+      return null;
+    }
+
+    return this.tickables[referenceIndex + 1];
+  }
+
+  getNextNote(referenceNote) {
+    let referenceIndex = this.tickables.indexOf(referenceNote);
+    while (referenceIndex < this.tickables.length) {
+      referenceIndex++;
+      if (this.tickables[referenceIndex] instanceof Vex.Flow.StaveNote) {
+        return this.tickables[referenceIndex];
+      }
+    }
+
+    return null;
+  }
+
+  replaceTickable(oldTickable, newTickable) {
+    // Replacing note in beam.
+    if (oldTickable.beam != null) {
+      const beam = oldTickable.beam;
+      const referenceIndex = beam.tickables.indexOf(oldTickable);
+      beam.notes[referenceIndex] = newTickable;
+    }
+
+    const referenceIndex = this.tickables.indexOf(oldTickable);
+    this.tickables[referenceIndex] = newTickable;
+  }
+
+  removeTickable(tickable) {
+    this.tickables.splice(this.tickables.indexOf(tickable), 1);
+  }
+
+  removeAllTickables() {
+    this.tickables = [];
+  }
+
+  pushTickable(newTickable) {
+    this.tickables.push(newTickable);
+  }
+
+  setBeams(beamList) {
+    this.beams = beamList;
+  }
+
+  getBeams() {
+    return this.beams;
+  }
+
+  pushBeam(newBeam) {
+    this.beams.push(newBeam);
   }
 }
