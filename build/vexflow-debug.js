@@ -4607,7 +4607,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	exports.Formatter = undefined;
 	
@@ -4656,34 +4656,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// To enable logging for this class. Set `Vex.Flow.Formatter.DEBUG` to `true`.
 	function L() {
-	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	    args[_key] = arguments[_key];
-	  }
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	    }
 	
-	  if (Formatter.DEBUG) _vex.Vex.L('Vex.Flow.Formatter', args);
+	    if (Formatter.DEBUG) _vex.Vex.L('Vex.Flow.Formatter', args);
 	}
 	
 	// Helper function to locate the next non-rest note(s).
 	function lookAhead(notes, restLine, i, compare) {
-	  // If no valid next note group, nextRestLine is same as current.
-	  var nextRestLine = restLine;
+	    // If no valid next note group, nextRestLine is same as current.
+	    var nextRestLine = restLine;
 	
-	  // Get the rest line for next valid non-rest note group.
-	  for (i += 1; i < notes.length; i += 1) {
-	    var note = notes[i];
-	    if (!note.isRest() && !note.shouldIgnoreTicks()) {
-	      nextRestLine = note.getLineForRest();
-	      break;
+	    // Get the rest line for next valid non-rest note group.
+	    for (i += 1; i < notes.length; i += 1) {
+	        var note = notes[i];
+	        if (!note.isRest() && !note.shouldIgnoreTicks()) {
+	            nextRestLine = note.getLineForRest();
+	            break;
+	        }
 	    }
-	  }
 	
-	  // Locate the mid point between two lines.
-	  if (compare && restLine !== nextRestLine) {
-	    var top = Math.max(restLine, nextRestLine);
-	    var bot = Math.min(restLine, nextRestLine);
-	    nextRestLine = _vex.Vex.MidLine(top, bot);
-	  }
-	  return nextRestLine;
+	    // Locate the mid point between two lines.
+	    if (compare && restLine !== nextRestLine) {
+	        var top = Math.max(restLine, nextRestLine);
+	        var bot = Math.min(restLine, nextRestLine);
+	        nextRestLine = _vex.Vex.MidLine(top, bot);
+	    }
+	    return nextRestLine;
 	}
 	
 	// Take an array of `voices` and place aligned tickables in the same context. Returns
@@ -4695,712 +4695,712 @@ return /******/ (function(modules) { // webpackBootstrap
 	// * `ContextType`: A context class (e.g., `ModifierContext`, `TickContext`)
 	// * `addToContext`: Function to add tickable to context.
 	function createContexts(voices, ContextType, addToContext) {
-	  if (!voices || !voices.length) {
-	    throw new _vex.Vex.RERR('BadArgument', 'No voices to format');
-	  }
-	
-	  // Find out highest common multiple of resolution multipliers.
-	  // The purpose of this is to find out a common denominator
-	  // for all fractional tick values in all tickables of all voices,
-	  // so that the values can be expanded and the numerator used
-	  // as an integer tick value.
-	  var totalTicks = voices[0].getTotalTicks();
-	  var resolutionMultiplier = voices.reduce(function (resolutionMultiplier, voice) {
-	    if (!voice.getTotalTicks().equals(totalTicks)) {
-	      throw new _vex.Vex.RERR('TickMismatch', 'Voices should have same total note duration in ticks.');
+	    if (!voices || !voices.length) {
+	        throw new _vex.Vex.RERR('BadArgument', 'No voices to format');
 	    }
 	
-	    if (voice.getMode() === _voice.Voice.Mode.STRICT && !voice.isComplete()) {
-	      throw new _vex.Vex.RERR('IncompleteVoice', 'Voice does not have enough notes.');
-	    }
+	    // Find out highest common multiple of resolution multipliers.
+	    // The purpose of this is to find out a common denominator
+	    // for all fractional tick values in all tickables of all voices,
+	    // so that the values can be expanded and the numerator used
+	    // as an integer tick value.
+	    var totalTicks = voices[0].getTotalTicks();
+	    var resolutionMultiplier = voices.reduce(function (resolutionMultiplier, voice) {
+	        if (!voice.getTotalTicks().equals(totalTicks)) {
+	            throw new _vex.Vex.RERR('TickMismatch', 'Voices should have same total note duration in ticks.');
+	        }
 	
-	    return Math.max(resolutionMultiplier, _fraction.Fraction.LCM(resolutionMultiplier, voice.getResolutionMultiplier()));
-	  }, 1);
+	        if (voice.getMode() === _voice.Voice.Mode.STRICT && !voice.isComplete()) {
+	            throw new _vex.Vex.RERR('IncompleteVoice', 'Voice does not have enough notes.');
+	        }
 	
-	  // Initialize tick maps.
-	  var tickToContextMap = {};
-	  var tickList = [];
-	  var contexts = [];
+	        return Math.max(resolutionMultiplier, _fraction.Fraction.LCM(resolutionMultiplier, voice.getResolutionMultiplier()));
+	    }, 1);
 	
-	  // For each voice, extract notes and create a context for every
-	  // new tick that hasn't been seen before.
-	  voices.forEach(function (voice) {
-	    // Use resolution multiplier as denominator to expand ticks
-	    // to suitable integer values, so that no additional expansion
-	    // of fractional tick values is needed.
-	    var ticksUsed = new _fraction.Fraction(0, resolutionMultiplier);
+	    // Initialize tick maps.
+	    var tickToContextMap = {};
+	    var tickList = [];
+	    var contexts = [];
 	
-	    voice.getTickables().forEach(function (tickable) {
-	      var integerTicks = ticksUsed.numerator;
+	    // For each voice, extract notes and create a context for every
+	    // new tick that hasn't been seen before.
+	    voices.forEach(function (voice) {
+	        // Use resolution multiplier as denominator to expand ticks
+	        // to suitable integer values, so that no additional expansion
+	        // of fractional tick values is needed.
+	        var ticksUsed = new _fraction.Fraction(0, resolutionMultiplier);
 	
-	      // If we have no tick context for this tick, create one.
-	      if (!tickToContextMap[integerTicks]) {
-	        var newContext = new ContextType();
-	        contexts.push(newContext);
-	        tickToContextMap[integerTicks] = newContext;
-	      }
+	        voice.getTickables().forEach(function (tickable) {
+	            var integerTicks = ticksUsed.numerator;
 	
-	      // Add this tickable to the TickContext.
-	      addToContext(tickable, tickToContextMap[integerTicks]);
+	            // If we have no tick context for this tick, create one.
+	            if (!tickToContextMap[integerTicks]) {
+	                var newContext = new ContextType();
+	                contexts.push(newContext);
+	                tickToContextMap[integerTicks] = newContext;
+	            }
 	
-	      // Maintain a sorted list of tick contexts.
-	      tickList.push(integerTicks);
-	      ticksUsed.add(tickable.getTicks());
+	            // Add this tickable to the TickContext.
+	            addToContext(tickable, tickToContextMap[integerTicks]);
+	
+	            // Maintain a sorted list of tick contexts.
+	            tickList.push(integerTicks);
+	            ticksUsed.add(tickable.getTicks());
+	        });
 	    });
-	  });
 	
-	  return {
-	    map: tickToContextMap,
-	    array: contexts,
-	    list: _vex.Vex.SortAndUnique(tickList, function (a, b) {
-	      return a - b;
-	    }, function (a, b) {
-	      return a === b;
-	    }),
-	    resolutionMultiplier: resolutionMultiplier
-	  };
+	    return {
+	        map: tickToContextMap,
+	        array: contexts,
+	        list: _vex.Vex.SortAndUnique(tickList, function (a, b) {
+	            return a - b;
+	        }, function (a, b) {
+	            return a === b;
+	        }),
+	        resolutionMultiplier: resolutionMultiplier
+	    };
 	}
 	
 	var Formatter = exports.Formatter = function () {
-	  _createClass(Formatter, null, [{
-	    key: 'SimpleFormat',
+	    _createClass(Formatter, null, [{
+	        key: 'SimpleFormat',
 	
-	    // Helper function to layout "notes" one after the other without
-	    // regard for proportions. Useful for tests and debugging.
-	    value: function SimpleFormat(notes) {
-	      var x = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+	        // Helper function to layout "notes" one after the other without
+	        // regard for proportions. Useful for tests and debugging.
+	        value: function SimpleFormat(notes) {
+	            var x = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
 	
-	      var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
-	          _ref$paddingBetween = _ref.paddingBetween,
-	          paddingBetween = _ref$paddingBetween === undefined ? 10 : _ref$paddingBetween;
+	            var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+	                _ref$paddingBetween = _ref.paddingBetween,
+	                paddingBetween = _ref$paddingBetween === undefined ? 10 : _ref$paddingBetween;
 	
-	      notes.reduce(function (x, note) {
-	        note.addToModifierContext(new _modifiercontext.ModifierContext());
-	        var tick = new _tickcontext.TickContext().addTickable(note).preFormat();
-	        var extra = tick.getExtraPx();
-	        tick.setX(x + extra.left);
+	            notes.reduce(function (x, note) {
+	                note.addToModifierContext(new _modifiercontext.ModifierContext());
+	                var tick = new _tickcontext.TickContext().addTickable(note).preFormat();
+	                var extra = tick.getExtraPx();
+	                tick.setX(x + extra.left);
 	
-	        return x + tick.getWidth() + extra.right + paddingBetween;
-	      }, x);
-	    }
+	                return x + tick.getWidth() + extra.right + paddingBetween;
+	            }, x);
+	        }
 	
-	    // Helper function to plot formatter debug info.
+	        // Helper function to plot formatter debug info.
 	
-	  }, {
-	    key: 'plotDebugging',
-	    value: function plotDebugging(ctx, formatter, xPos, y1, y2) {
-	      var x = xPos + _note.Note.STAVEPADDING;
-	      var contextGaps = formatter.contextGaps;
-	      function stroke(x1, x2, color) {
-	        ctx.beginPath();
-	        ctx.setStrokeStyle(color);
-	        ctx.setFillStyle(color);
-	        ctx.setLineWidth(1);
-	        ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
-	      }
-	
-	      ctx.save();
-	      ctx.setFont('Arial', 8, '');
-	
-	      contextGaps.gaps.forEach(function (gap) {
-	        stroke(x + gap.x1, x + gap.x2, '#aaa');
-	        // Vex.drawDot(ctx, xPos + gap.x1, yPos, 'blue');
-	        ctx.fillText(Math.round(gap.x2 - gap.x1), x + gap.x1, y2 + 12);
-	      });
-	
-	      ctx.fillText(Math.round(contextGaps.total) + 'px', x - 20, y2 + 12);
-	      ctx.setFillStyle('red');
-	
-	      ctx.fillText('Loss: ' + formatter.lossHistory.map(function (loss) {
-	        return Math.round(loss);
-	      }), x - 20, y2 + 22);
-	      ctx.restore();
-	    }
-	
-	    // Helper function to format and draw a single voice. Returns a bounding
-	    // box for the notation.
-	    //
-	    // Parameters:
-	    // * `ctx` - The rendering context
-	    // * `stave` - The stave to which to draw (`Stave` or `TabStave`)
-	    // * `notes` - Array of `Note` instances (`StaveNote`, `TextNote`, `TabNote`, etc.)
-	    // * `params` - One of below:
-	    //    * Setting `autobeam` only `(context, stave, notes, true)` or
-	    //      `(ctx, stave, notes, {autobeam: true})`
-	    //    * Setting `align_rests` a struct is needed `(context, stave, notes, {align_rests: true})`
-	    //    * Setting both a struct is needed `(context, stave, notes, {
-	    //      autobeam: true, align_rests: true})`
-	    //
-	    // `autobeam` automatically generates beams for the notes.
-	    // `align_rests` aligns rests with nearby notes.
-	
-	  }, {
-	    key: 'FormatAndDraw',
-	    value: function FormatAndDraw(ctx, stave, notes, params) {
-	      var options = {
-	        auto_beam: false,
-	        align_rests: false
-	      };
-	
-	      if ((typeof params === 'undefined' ? 'undefined' : _typeof(params)) === 'object') {
-	        _vex.Vex.Merge(options, params);
-	      } else if (typeof params === 'boolean') {
-	        options.auto_beam = params;
-	      }
-	
-	      // Start by creating a voice and adding all the notes to it.
-	      var voice = new _voice.Voice(_tables.Flow.TIME4_4).setMode(_voice.Voice.Mode.SOFT).addTickables(notes);
-	
-	      // Then create beams, if requested.
-	      var beams = options.auto_beam ? _beam.Beam.applyAndGetBeams(voice) : [];
-	
-	      // Instantiate a `Formatter` and format the notes.
-	      new Formatter().joinVoices([voice], { align_rests: options.align_rests }).formatToStave([voice], stave, { align_rests: options.align_rests, stave: stave });
-	
-	      // Render the voice and beams to the stave.
-	      voice.setStave(stave).draw(ctx, stave);
-	      beams.forEach(function (beam) {
-	        return beam.setContext(ctx).draw();
-	      });
-	
-	      // Return the bounding box of the voice.
-	      return voice.getBoundingBox();
-	    }
-	
-	    // Helper function to format and draw aligned tab and stave notes in two
-	    // separate staves.
-	    //
-	    // Parameters:
-	    // * `ctx` - The rendering context
-	    // * `tabstave` - A `TabStave` instance on which to render `TabNote`s.
-	    // * `stave` - A `Stave` instance on which to render `Note`s.
-	    // * `notes` - Array of `Note` instances for the stave (`StaveNote`, `BarNote`, etc.)
-	    // * `tabnotes` - Array of `Note` instances for the tab stave (`TabNote`, `BarNote`, etc.)
-	    // * `autobeam` - Automatically generate beams.
-	    // * `params` - A configuration object:
-	    //    * `autobeam` automatically generates beams for the notes.
-	    //    * `align_rests` aligns rests with nearby notes.
-	
-	  }, {
-	    key: 'FormatAndDrawTab',
-	    value: function FormatAndDrawTab(ctx, tabstave, stave, tabnotes, notes, autobeam, params) {
-	      var opts = {
-	        auto_beam: autobeam,
-	        align_rests: false
-	      };
-	
-	      if ((typeof params === 'undefined' ? 'undefined' : _typeof(params)) === 'object') {
-	        _vex.Vex.Merge(opts, params);
-	      } else if (typeof params === 'boolean') {
-	        opts.auto_beam = params;
-	      }
-	
-	      // Create a `4/4` voice for `notes`.
-	      var notevoice = new _voice.Voice(_tables.Flow.TIME4_4).setMode(_voice.Voice.Mode.SOFT).addTickables(notes);
-	
-	      // Create a `4/4` voice for `tabnotes`.
-	      var tabvoice = new _voice.Voice(_tables.Flow.TIME4_4).setMode(_voice.Voice.Mode.SOFT).addTickables(tabnotes);
-	
-	      // Then create beams, if requested.
-	      var beams = opts.auto_beam ? _beam.Beam.applyAndGetBeams(notevoice) : [];
-	
-	      // Instantiate a `Formatter` and align tab and stave notes.
-	      new Formatter().joinVoices([notevoice], { align_rests: opts.align_rests }).joinVoices([tabvoice]).formatToStave([notevoice, tabvoice], stave, { align_rests: opts.align_rests });
-	
-	      // Render voices and beams to staves.
-	      notevoice.draw(ctx, stave);
-	      tabvoice.draw(ctx, tabstave);
-	      beams.forEach(function (beam) {
-	        return beam.setContext(ctx).draw();
-	      });
-	
-	      // Draw a connector between tab and note staves.
-	      new _staveconnector.StaveConnector(stave, tabstave).setContext(ctx).draw();
-	    }
-	
-	    // Auto position rests based on previous/next note positions.
-	    //
-	    // Params:
-	    // * `notes`: An array of notes.
-	    // * `alignAllNotes`: If set to false, only aligns non-beamed notes.
-	    // * `alignTuplets`: If set to false, ignores tuplets.
-	
-	  }, {
-	    key: 'AlignRestsToNotes',
-	    value: function AlignRestsToNotes(notes, alignAllNotes, alignTuplets) {
-	      notes.forEach(function (note, index) {
-	        if (note instanceof _stavenote.StaveNote && note.isRest()) {
-	          if (note.tuplet && !alignTuplets) return;
-	
-	          // If activated rests not on default can be rendered as specified.
-	          var position = note.getGlyph().position.toUpperCase();
-	          if (position !== 'R/4' && position !== 'B/4') return;
-	
-	          if (alignAllNotes || note.beam != null) {
-	            // Align rests with previous/next notes.
-	            var props = note.getKeyProps()[0];
-	            if (index === 0) {
-	              props.line = lookAhead(notes, props.line, index, false);
-	              note.setKeyLine(0, props.line);
-	            } else if (index > 0 && index < notes.length) {
-	              // If previous note is a rest, use its line number.
-	              var restLine = void 0;
-	              if (notes[index - 1].isRest()) {
-	                restLine = notes[index - 1].getKeyProps()[0].line;
-	                props.line = restLine;
-	              } else {
-	                restLine = notes[index - 1].getLineForRest();
-	                // Get the rest line for next valid non-rest note group.
-	                props.line = lookAhead(notes, restLine, index, true);
-	              }
-	              note.setKeyLine(0, props.line);
+	    }, {
+	        key: 'plotDebugging',
+	        value: function plotDebugging(ctx, formatter, xPos, y1, y2) {
+	            var x = xPos + _note.Note.STAVEPADDING;
+	            var contextGaps = formatter.contextGaps;
+	            function stroke(x1, x2, color) {
+	                ctx.beginPath();
+	                ctx.setStrokeStyle(color);
+	                ctx.setFillStyle(color);
+	                ctx.setLineWidth(1);
+	                ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
 	            }
-	          }
-	        }
-	      });
 	
-	      return this;
-	    }
-	  }]);
+	            ctx.save();
+	            ctx.setFont('Arial', 8, '');
 	
-	  function Formatter() {
-	    _classCallCheck(this, Formatter);
+	            contextGaps.gaps.forEach(function (gap) {
+	                stroke(x + gap.x1, x + gap.x2, '#aaa');
+	                // Vex.drawDot(ctx, xPos + gap.x1, yPos, 'blue');
+	                ctx.fillText(Math.round(gap.x2 - gap.x1), x + gap.x1, y2 + 12);
+	            });
 	
-	    // Minimum width required to render all the notes in the voices.
-	    this.minTotalWidth = 0;
+	            ctx.fillText(Math.round(contextGaps.total) + 'px', x - 20, y2 + 12);
+	            ctx.setFillStyle('red');
 	
-	    // This is set to `true` after `minTotalWidth` is calculated.
-	    this.hasMinTotalWidth = false;
-	
-	    // Total number of ticks in the voice.
-	    this.totalTicks = new _fraction.Fraction(0, 1);
-	
-	    // Arrays of tick and modifier contexts.
-	    this.tickContexts = null;
-	    this.modiferContexts = null;
-	
-	    // Gaps between contexts, for free movement of notes post
-	    // formatting.
-	    this.contextGaps = {
-	      total: 0,
-	      gaps: []
-	    };
-	
-	    this.voices = [];
-	  }
-	
-	  // Find all the rests in each of the `voices` and align them
-	  // to neighboring notes. If `alignAllNotes` is `false`, then only
-	  // align non-beamed notes.
-	
-	
-	  _createClass(Formatter, [{
-	    key: 'alignRests',
-	    value: function alignRests(voices, alignAllNotes) {
-	      if (!voices || !voices.length) {
-	        throw new _vex.Vex.RERR('BadArgument', 'No voices to format rests');
-	      }
-	
-	      voices.forEach(function (voice) {
-	        return Formatter.AlignRestsToNotes(voice.getTickables(), alignAllNotes);
-	      });
-	    }
-	
-	    // Calculate the minimum width required to align and format `voices`.
-	
-	  }, {
-	    key: 'preCalculateMinTotalWidth',
-	    value: function preCalculateMinTotalWidth(voices) {
-	      // Cache results.
-	      if (this.hasMinTotalWidth) return this.minTotalWidth;
-	
-	      // Create tick contexts if not already created.
-	      if (!this.tickContexts) {
-	        if (!voices) {
-	          throw new _vex.Vex.RERR('BadArgument', "'voices' required to run preCalculateMinTotalWidth");
+	            ctx.fillText('Loss: ' + formatter.lossHistory.map(function (loss) {
+	                return Math.round(loss);
+	            }), x - 20, y2 + 22);
+	            ctx.restore();
 	        }
 	
-	        this.createTickContexts(voices);
-	      }
+	        // Helper function to format and draw a single voice. Returns a bounding
+	        // box for the notation.
+	        //
+	        // Parameters:
+	        // * `ctx` - The rendering context
+	        // * `stave` - The stave to which to draw (`Stave` or `TabStave`)
+	        // * `notes` - Array of `Note` instances (`StaveNote`, `TextNote`, `TabNote`, etc.)
+	        // * `params` - One of below:
+	        //    * Setting `autobeam` only `(context, stave, notes, true)` or
+	        //      `(ctx, stave, notes, {autobeam: true})`
+	        //    * Setting `align_rests` a struct is needed `(context, stave, notes, {align_rests: true})`
+	        //    * Setting both a struct is needed `(context, stave, notes, {
+	        //      autobeam: true, align_rests: true})`
+	        //
+	        // `autobeam` automatically generates beams for the notes.
+	        // `align_rests` aligns rests with nearby notes.
 	
-	      var _tickContexts = this.tickContexts,
-	          contextList = _tickContexts.list,
-	          contextMap = _tickContexts.map;
+	    }, {
+	        key: 'FormatAndDraw',
+	        value: function FormatAndDraw(ctx, stave, notes, params) {
+	            var options = {
+	                auto_beam: false,
+	                align_rests: false
+	            };
 	
-	      // Go through each tick context and calculate total width.
+	            if ((typeof params === 'undefined' ? 'undefined' : _typeof(params)) === 'object') {
+	                _vex.Vex.Merge(options, params);
+	            } else if (typeof params === 'boolean') {
+	                options.auto_beam = params;
+	            }
 	
-	      this.minTotalWidth = contextList.map(function (tick) {
-	        var context = contextMap[tick];
-	        context.preFormat();
-	        return context.getWidth();
-	      }).reduce(function (a, b) {
-	        return a + b;
-	      }, 0);
+	            // Start by creating a voice and adding all the notes to it.
+	            var voice = new _voice.Voice(_tables.Flow.TIME4_4).setMode(_voice.Voice.Mode.SOFT).addTickables(notes);
 	
-	      this.hasMinTotalWidth = true;
+	            // Then create beams, if requested.
+	            var beams = options.auto_beam ? _beam.Beam.applyAndGetBeams(voice) : [];
 	
-	      return this.minTotalWidth;
-	    }
+	            // Instantiate a `Formatter` and format the notes.
+	            new Formatter().joinVoices([voice], { align_rests: options.align_rests }).formatToStave([voice], stave, { align_rests: options.align_rests, stave: stave });
 	
-	    // Get minimum width required to render all voices. Either `format` or
-	    // `preCalculateMinTotalWidth` must be called before this method.
+	            // Render the voice and beams to the stave.
+	            voice.setStave(stave).draw(ctx, stave);
+	            beams.forEach(function (beam) {
+	                return beam.setContext(ctx).draw();
+	            });
 	
-	  }, {
-	    key: 'getMinTotalWidth',
-	    value: function getMinTotalWidth() {
-	      if (!this.hasMinTotalWidth) {
-	        throw new _vex.Vex.RERR('NoMinTotalWidth', "Call 'preCalculateMinTotalWidth' or 'preFormat' before calling 'getMinTotalWidth'");
-	      }
-	
-	      return this.minTotalWidth;
-	    }
-	
-	    // Create `ModifierContext`s for each tick in `voices`.
-	
-	  }, {
-	    key: 'createModifierContexts',
-	    value: function createModifierContexts(voices) {
-	      var contexts = createContexts(voices, _modifiercontext.ModifierContext, function (tickable, context) {
-	        return tickable.addToModifierContext(context);
-	      });
-	
-	      this.modiferContexts = contexts;
-	      return contexts;
-	    }
-	
-	    // Create `TickContext`s for each tick in `voices`. Also calculate the
-	    // total number of ticks in voices.
-	
-	  }, {
-	    key: 'createTickContexts',
-	    value: function createTickContexts(voices) {
-	      var contexts = createContexts(voices, _tickcontext.TickContext, function (tickable, context) {
-	        return context.addTickable(tickable);
-	      });
-	
-	      contexts.array.forEach(function (context) {
-	        context.tContexts = contexts.array;
-	      });
-	
-	      this.totalTicks = voices[0].getTicksUsed().clone();
-	      this.tickContexts = contexts;
-	      return contexts;
-	    }
-	
-	    // This is the core formatter logic. Format voices and justify them
-	    // to `justifyWidth` pixels. `renderingContext` is required to justify elements
-	    // that can't retreive widths without a canvas. This method sets the `x` positions
-	    // of all the tickables/notes in the formatter.
-	
-	  }, {
-	    key: 'preFormat',
-	    value: function preFormat() {
-	      var justifyWidth = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-	      var renderingContext = arguments[1];
-	
-	      var _this = this;
-	
-	      var voices = arguments[2];
-	      var stave = arguments[3];
-	
-	      // Initialize context maps.
-	      var contexts = this.tickContexts;
-	      var contextList = contexts.list,
-	          contextMap = contexts.map,
-	          resolutionMultiplier = contexts.resolutionMultiplier;
-	
-	      // If voices and a stave were provided, set the Stave for each voice
-	      // and preFormat to apply Y values to the notes;
-	
-	      if (voices && stave) {
-	        voices.forEach(function (voice) {
-	          return voice.setStave(stave).preFormat();
-	        });
-	      }
-	
-	      // Now distribute the ticks to each tick context, and assign them their
-	      // own X positions.
-	      var x = 0;
-	      var shift = 0;
-	      var centerX = justifyWidth / 2;
-	      this.minTotalWidth = 0;
-	
-	      // Pass 1: Give each note maximum width requested by context.
-	      contextList.forEach(function (tick) {
-	        var context = contextMap[tick];
-	        if (renderingContext) context.setContext(renderingContext);
-	
-	        // Make sure that all tickables in this context have calculated their
-	        // space requirements.
-	        context.preFormat();
-	
-	        var width = context.getWidth();
-	        _this.minTotalWidth += width;
-	
-	        var metrics = context.getMetrics();
-	        x = x + shift + metrics.extraLeftPx;
-	        context.setX(x);
-	
-	        // Calculate shift for the next tick.
-	        shift = width - metrics.extraLeftPx;
-	      });
-	
-	      this.minTotalWidth = x + shift;
-	      this.hasMinTotalWidth = true;
-	
-	      // No justification needed. End formatting.
-	      if (justifyWidth <= 0) return;
-	
-	      // Pass 2: Take leftover width, and distribute it to proportionately to
-	      // all notes.
-	      var remainingX = justifyWidth - this.minTotalWidth;
-	      var leftoverPxPerTick = remainingX / (this.totalTicks.value() * resolutionMultiplier);
-	      var spaceAccum = 0;
-	
-	      contextList.forEach(function (tick, index) {
-	        var prevTick = contextList[index - 1] || 0;
-	        var context = contextMap[tick];
-	        var tickSpace = (tick - prevTick) * leftoverPxPerTick;
-	
-	        spaceAccum += tickSpace;
-	        context.setX(context.getX() + spaceAccum);
-	
-	        // Move center aligned tickables to middle
-	        context.getCenterAlignedTickables().forEach(function (tickable) {
-	          // eslint-disable-line
-	          tickable.center_x_shift = centerX - context.getX();
-	        });
-	      });
-	
-	      // Just one context. Done formatting.
-	      if (contextList.length === 1) return;
-	
-	      this.justifyWidth = justifyWidth;
-	      this.lossHistory = [];
-	      this.evaluate();
-	    }
-	
-	    // Calculate the total cost of this formatting decision.
-	
-	  }, {
-	    key: 'evaluate',
-	    value: function evaluate() {
-	      var _this2 = this;
-	
-	      var justifyWidth = this.justifyWidth;
-	      // Calculate available slack per tick context. This works out how much freedom
-	      // to move a context has in either direction, without affecting other notes.
-	      this.contextGaps = { total: 0, gaps: [] };
-	      this.tickContexts.list.forEach(function (tick, index) {
-	        if (index === 0) return;
-	        var prevTick = _this2.tickContexts.list[index - 1];
-	        var prevContext = _this2.tickContexts.map[prevTick];
-	        var context = _this2.tickContexts.map[tick];
-	        var prevMetrics = prevContext.getMetrics();
-	
-	        var insideRightEdge = prevContext.getX() + prevMetrics.width;
-	        var insideLeftEdge = context.getX();
-	        var gap = insideLeftEdge - insideRightEdge;
-	        _this2.contextGaps.total += gap;
-	        _this2.contextGaps.gaps.push({ x1: insideRightEdge, x2: insideLeftEdge });
-	
-	        // Tell the tick contexts how much they can reposition themselves.
-	        context.getFormatterMetrics().freedom.left = gap;
-	        prevContext.getFormatterMetrics().freedom.right = gap;
-	      });
-	
-	      // Calculate mean distance in each voice for each duration type, then calculate
-	      // how far each note is from the mean.
-	      var durationStats = this.durationStats = {};
-	
-	      function updateStats(duration, space) {
-	        var stats = durationStats[duration];
-	        if (stats === undefined) {
-	          durationStats[duration] = { mean: space, count: 1 };
-	        } else {
-	          stats.count += 1;
-	          stats.mean = (stats.mean + space) / 2;
-	        }
-	      }
-	
-	      this.voices.forEach(function (voice) {
-	        voice.getTickables().forEach(function (note, i, notes) {
-	          var duration = note.getTicks().clone().simplify().toString();
-	          var metrics = note.getMetrics();
-	          var formatterMetrics = note.getFormatterMetrics();
-	          var leftNoteEdge = note.getX() + metrics.noteWidth + metrics.modRightPx + metrics.extraRightPx;
-	          var space = 0;
-	
-	          if (i < notes.length - 1) {
-	            var rightNote = notes[i + 1];
-	            var rightMetrics = rightNote.getMetrics();
-	            var rightNoteEdge = rightNote.getX() - rightMetrics.modLeftPx - rightMetrics.extraLeftPx;
-	
-	            space = rightNoteEdge - leftNoteEdge;
-	            formatterMetrics.space.used = rightNote.getX() - note.getX();
-	            rightNote.getFormatterMetrics().freedom.left = space;
-	          } else {
-	            space = justifyWidth - leftNoteEdge;
-	            formatterMetrics.space.used = justifyWidth - note.getX();
-	          }
-	
-	          formatterMetrics.freedom.right = space;
-	          updateStats(duration, formatterMetrics.space.used);
-	        });
-	      });
-	
-	      // Calculate how much each note deviates from the mean. Loss function is square
-	      // root of the sum of squared deviations.
-	      var totalDeviation = 0;
-	      this.voices.forEach(function (voice) {
-	        voice.getTickables().forEach(function (note) {
-	          var duration = note.getTicks().clone().simplify().toString();
-	          var metrics = note.getFormatterMetrics();
-	          metrics.iterations += 1;
-	          metrics.space.deviation = metrics.space.used - durationStats[duration].mean;
-	          metrics.duration = duration;
-	          metrics.space.mean = durationStats[duration].mean;
-	
-	          totalDeviation += Math.pow(durationStats[duration].mean, 2);
-	        });
-	      });
-	
-	      this.totalCost = Math.sqrt(totalDeviation);
-	      this.lossHistory.push(this.totalCost);
-	      return this;
-	    }
-	
-	    // Run a single iteration of rejustification. At a high level, this method calculates
-	    // the overall "loss" (or cost) of this layout, and repositions tickcontexts in an
-	    // attempt to reduce the cost. You can call this method multiple times until it finds
-	    // and oscillates around a global minimum.
-	
-	  }, {
-	    key: 'tune',
-	    value: function tune() {
-	      var _this3 = this;
-	
-	      var sum = function sum(means) {
-	        return means.reduce(function (a, b) {
-	          return a + b;
-	        });
-	      };
-	
-	      // Move `current` tickcontext by `shift` pixels, and adjust the freedom
-	      // on adjacent tickcontexts.
-	      function move(current, prev, next, shift) {
-	        current.setX(current.getX() + shift);
-	        current.getFormatterMetrics().freedom.left += shift;
-	        current.getFormatterMetrics().freedom.right -= shift;
-	
-	        if (prev) prev.getFormatterMetrics().freedom.right += shift;
-	        if (next) next.getFormatterMetrics().freedom.left -= shift;
-	      }
-	
-	      var shift = 0;
-	      this.tickContexts.list.forEach(function (tick, index, list) {
-	        var context = _this3.tickContexts.map[tick];
-	        var prevContext = index > 0 ? _this3.tickContexts.map[list[index - 1]] : null;
-	        var nextContext = index < list.length - 1 ? _this3.tickContexts.map[list[index + 1]] : null;
-	
-	        move(context, prevContext, nextContext, shift);
-	
-	        var cost = -sum(context.getTickables().map(function (t) {
-	          return t.getFormatterMetrics().space.deviation;
-	        }));
-	
-	        if (cost > 0) {
-	          shift = -Math.min(context.getFormatterMetrics().freedom.right, Math.abs(cost));
-	        } else if (cost < 0) {
-	          if (nextContext) {
-	            shift = Math.min(nextContext.getFormatterMetrics().freedom.right, Math.abs(cost));
-	          } else {
-	            shift = 0;
-	          }
+	            // Return the bounding box of the voice.
+	            return voice.getBoundingBox();
 	        }
 	
-	        var minShift = Math.min(5, Math.abs(shift));
-	        shift = shift > 0 ? minShift : -minShift;
-	      });
+	        // Helper function to format and draw aligned tab and stave notes in two
+	        // separate staves.
+	        //
+	        // Parameters:
+	        // * `ctx` - The rendering context
+	        // * `tabstave` - A `TabStave` instance on which to render `TabNote`s.
+	        // * `stave` - A `Stave` instance on which to render `Note`s.
+	        // * `notes` - Array of `Note` instances for the stave (`StaveNote`, `BarNote`, etc.)
+	        // * `tabnotes` - Array of `Note` instances for the tab stave (`TabNote`, `BarNote`, etc.)
+	        // * `autobeam` - Automatically generate beams.
+	        // * `params` - A configuration object:
+	        //    * `autobeam` automatically generates beams for the notes.
+	        //    * `align_rests` aligns rests with nearby notes.
 	
-	      return this.evaluate();
+	    }, {
+	        key: 'FormatAndDrawTab',
+	        value: function FormatAndDrawTab(ctx, tabstave, stave, tabnotes, notes, autobeam, params) {
+	            var opts = {
+	                auto_beam: autobeam,
+	                align_rests: false
+	            };
+	
+	            if ((typeof params === 'undefined' ? 'undefined' : _typeof(params)) === 'object') {
+	                _vex.Vex.Merge(opts, params);
+	            } else if (typeof params === 'boolean') {
+	                opts.auto_beam = params;
+	            }
+	
+	            // Create a `4/4` voice for `notes`.
+	            var notevoice = new _voice.Voice(_tables.Flow.TIME4_4).setMode(_voice.Voice.Mode.SOFT).addTickables(notes);
+	
+	            // Create a `4/4` voice for `tabnotes`.
+	            var tabvoice = new _voice.Voice(_tables.Flow.TIME4_4).setMode(_voice.Voice.Mode.SOFT).addTickables(tabnotes);
+	
+	            // Then create beams, if requested.
+	            var beams = opts.auto_beam ? _beam.Beam.applyAndGetBeams(notevoice) : [];
+	
+	            // Instantiate a `Formatter` and align tab and stave notes.
+	            new Formatter().joinVoices([notevoice], { align_rests: opts.align_rests }).joinVoices([tabvoice]).formatToStave([notevoice, tabvoice], stave, { align_rests: opts.align_rests });
+	
+	            // Render voices and beams to staves.
+	            notevoice.draw(ctx, stave);
+	            tabvoice.draw(ctx, tabstave);
+	            beams.forEach(function (beam) {
+	                return beam.setContext(ctx).draw();
+	            });
+	
+	            // Draw a connector between tab and note staves.
+	            new _staveconnector.StaveConnector(stave, tabstave).setContext(ctx).draw();
+	        }
+	
+	        // Auto position rests based on previous/next note positions.
+	        //
+	        // Params:
+	        // * `notes`: An array of notes.
+	        // * `alignAllNotes`: If set to false, only aligns non-beamed notes.
+	        // * `alignTuplets`: If set to false, ignores tuplets.
+	
+	    }, {
+	        key: 'AlignRestsToNotes',
+	        value: function AlignRestsToNotes(notes, alignAllNotes, alignTuplets) {
+	            notes.forEach(function (note, index) {
+	                if (note instanceof _stavenote.StaveNote && note.isRest()) {
+	                    if (note.tuplet && !alignTuplets) return;
+	
+	                    // If activated rests not on default can be rendered as specified.
+	                    var position = note.getGlyph().position.toUpperCase();
+	                    if (position !== 'R/4' && position !== 'B/4') return;
+	
+	                    if (alignAllNotes || note.beam != null) {
+	                        // Align rests with previous/next notes.
+	                        var props = note.getKeyProps()[0];
+	                        if (index === 0) {
+	                            props.line = lookAhead(notes, props.line, index, false);
+	                            note.setKeyLine(0, props.line);
+	                        } else if (index > 0 && index < notes.length) {
+	                            // If previous note is a rest, use its line number.
+	                            var restLine = void 0;
+	                            if (notes[index - 1].isRest()) {
+	                                restLine = notes[index - 1].getKeyProps()[0].line;
+	                                props.line = restLine;
+	                            } else {
+	                                restLine = notes[index - 1].getLineForRest();
+	                                // Get the rest line for next valid non-rest note group.
+	                                props.line = lookAhead(notes, restLine, index, true);
+	                            }
+	                            note.setKeyLine(0, props.line);
+	                        }
+	                    }
+	                }
+	            });
+	
+	            return this;
+	        }
+	    }]);
+	
+	    function Formatter() {
+	        _classCallCheck(this, Formatter);
+	
+	        // Minimum width required to render all the notes in the voices.
+	        this.minTotalWidth = 0;
+	
+	        // This is set to `true` after `minTotalWidth` is calculated.
+	        this.hasMinTotalWidth = false;
+	
+	        // Total number of ticks in the voice.
+	        this.totalTicks = new _fraction.Fraction(0, 1);
+	
+	        // Arrays of tick and modifier contexts.
+	        this.tickContexts = null;
+	        this.modiferContexts = null;
+	
+	        // Gaps between contexts, for free movement of notes post
+	        // formatting.
+	        this.contextGaps = {
+	            total: 0,
+	            gaps: []
+	        };
+	
+	        this.voices = [];
 	    }
 	
-	    // This is the top-level call for all formatting logic completed
-	    // after `x` *and* `y` values have been computed for the notes
-	    // in the voices.
+	    // Find all the rests in each of the `voices` and align them
+	    // to neighboring notes. If `alignAllNotes` is `false`, then only
+	    // align non-beamed notes.
 	
-	  }, {
-	    key: 'postFormat',
-	    value: function postFormat() {
-	      var postFormatContexts = function postFormatContexts(contexts) {
-	        return contexts.list.forEach(function (tick) {
-	          return contexts.map[tick].postFormat();
-	        });
-	      };
 	
-	      postFormatContexts(this.modiferContexts);
-	      postFormatContexts(this.tickContexts);
+	    _createClass(Formatter, [{
+	        key: 'alignRests',
+	        value: function alignRests(voices, alignAllNotes) {
+	            if (!voices || !voices.length) {
+	                throw new _vex.Vex.RERR('BadArgument', 'No voices to format rests');
+	            }
 	
-	      return this;
-	    }
+	            voices.forEach(function (voice) {
+	                return Formatter.AlignRestsToNotes(voice.getTickables(), alignAllNotes);
+	            });
+	        }
 	
-	    // Take all `voices` and create `ModifierContext`s out of them. This tells
-	    // the formatters that the voices belong on a single stave.
+	        // Calculate the minimum width required to align and format `voices`.
 	
-	  }, {
-	    key: 'joinVoices',
-	    value: function joinVoices(voices) {
-	      this.createModifierContexts(voices);
-	      this.hasMinTotalWidth = false;
-	      return this;
-	    }
+	    }, {
+	        key: 'preCalculateMinTotalWidth',
+	        value: function preCalculateMinTotalWidth(voices) {
+	            // Cache results.
+	            if (this.hasMinTotalWidth) return this.minTotalWidth;
 	
-	    // Align rests in voices, justify the contexts, and position the notes
-	    // so voices are aligned and ready to render onto the stave. This method
-	    // mutates the `x` positions of all tickables in `voices`.
-	    //
-	    // Voices are full justified to fit in `justifyWidth` pixels.
-	    //
-	    // Set `options.context` to the rendering context. Set `options.align_rests`
-	    // to true to enable rest alignment.
+	            // Create tick contexts if not already created.
+	            if (!this.tickContexts) {
+	                if (!voices) {
+	                    throw new _vex.Vex.RERR('BadArgument', "'voices' required to run preCalculateMinTotalWidth");
+	                }
 	
-	  }, {
-	    key: 'format',
-	    value: function format(voices, justifyWidth, options) {
-	      var opts = {
-	        align_rests: false,
-	        context: null,
-	        stave: null
-	      };
+	                this.createTickContexts(voices);
+	            }
 	
-	      _vex.Vex.Merge(opts, options);
-	      this.voices = voices;
-	      this.alignRests(voices, opts.align_rests);
-	      this.createTickContexts(voices);
-	      this.preFormat(justifyWidth, opts.context, voices, opts.stave);
+	            var _tickContexts = this.tickContexts,
+	                contextList = _tickContexts.list,
+	                contextMap = _tickContexts.map;
 	
-	      // Only postFormat if a stave was supplied for y value formatting
-	      if (opts.stave) this.postFormat();
+	            // Go through each tick context and calculate total width.
 	
-	      return this;
-	    }
+	            this.minTotalWidth = contextList.map(function (tick) {
+	                var context = contextMap[tick];
+	                context.preFormat();
+	                return context.getWidth();
+	            }).reduce(function (a, b) {
+	                return a + b;
+	            }, 0);
 	
-	    // This method is just like `format` except that the `justifyWidth` is inferred
-	    // from the `stave`.
+	            this.hasMinTotalWidth = true;
 	
-	  }, {
-	    key: 'formatToStave',
-	    value: function formatToStave(voices, stave, options) {
-	      var justifyWidth = stave.getNoteEndX() - stave.getNoteStartX() - 10;
-	      L('Formatting voices to width: ', justifyWidth);
-	      var opts = { context: stave.getContext() };
-	      _vex.Vex.Merge(opts, options);
-	      return this.format(voices, justifyWidth, opts);
-	    }
-	  }]);
+	            return this.minTotalWidth;
+	        }
+	
+	        // Get minimum width required to render all voices. Either `format` or
+	        // `preCalculateMinTotalWidth` must be called before this method.
+	
+	    }, {
+	        key: 'getMinTotalWidth',
+	        value: function getMinTotalWidth() {
+	            if (!this.hasMinTotalWidth) {
+	                throw new _vex.Vex.RERR('NoMinTotalWidth', "Call 'preCalculateMinTotalWidth' or 'preFormat' before calling 'getMinTotalWidth'");
+	            }
+	
+	            return this.minTotalWidth;
+	        }
+	
+	        // Create `ModifierContext`s for each tick in `voices`.
+	
+	    }, {
+	        key: 'createModifierContexts',
+	        value: function createModifierContexts(voices) {
+	            var contexts = createContexts(voices, _modifiercontext.ModifierContext, function (tickable, context) {
+	                return tickable.addToModifierContext(context);
+	            });
+	
+	            this.modiferContexts = contexts;
+	            return contexts;
+	        }
+	
+	        // Create `TickContext`s for each tick in `voices`. Also calculate the
+	        // total number of ticks in voices.
+	
+	    }, {
+	        key: 'createTickContexts',
+	        value: function createTickContexts(voices) {
+	            var contexts = createContexts(voices, _tickcontext.TickContext, function (tickable, context) {
+	                return context.addTickable(tickable);
+	            });
+	
+	            contexts.array.forEach(function (context) {
+	                context.tContexts = contexts.array;
+	            });
+	
+	            this.totalTicks = voices[0].getTicksUsed().clone();
+	            this.tickContexts = contexts;
+	            return contexts;
+	        }
+	
+	        // This is the core formatter logic. Format voices and justify them
+	        // to `justifyWidth` pixels. `renderingContext` is required to justify elements
+	        // that can't retreive widths without a canvas. This method sets the `x` positions
+	        // of all the tickables/notes in the formatter.
+	
+	    }, {
+	        key: 'preFormat',
+	        value: function preFormat() {
+	            var justifyWidth = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+	            var renderingContext = arguments[1];
+	
+	            var _this = this;
+	
+	            var voices = arguments[2];
+	            var stave = arguments[3];
+	
+	            // Initialize context maps.
+	            var contexts = this.tickContexts;
+	            var contextList = contexts.list,
+	                contextMap = contexts.map,
+	                resolutionMultiplier = contexts.resolutionMultiplier;
+	
+	            // If voices and a stave were provided, set the Stave for each voice
+	            // and preFormat to apply Y values to the notes;
+	
+	            if (voices && stave) {
+	                voices.forEach(function (voice) {
+	                    return voice.setStave(stave).preFormat();
+	                });
+	            }
+	
+	            // Now distribute the ticks to each tick context, and assign them their
+	            // own X positions.
+	            var x = 0;
+	            var shift = 0;
+	            var centerX = justifyWidth / 2;
+	            this.minTotalWidth = 0;
+	
+	            // Pass 1: Give each note maximum width requested by context.
+	            contextList.forEach(function (tick) {
+	                var context = contextMap[tick];
+	                if (renderingContext) context.setContext(renderingContext);
+	
+	                // Make sure that all tickables in this context have calculated their
+	                // space requirements.
+	                context.preFormat();
+	
+	                var width = context.getWidth();
+	                _this.minTotalWidth += width;
+	
+	                var metrics = context.getMetrics();
+	                x = x + shift + metrics.extraLeftPx;
+	                context.setX(x);
+	
+	                // Calculate shift for the next tick.
+	                shift = width - metrics.extraLeftPx;
+	            });
+	
+	            this.minTotalWidth = x + shift;
+	            this.hasMinTotalWidth = true;
+	
+	            // No justification needed. End formatting.
+	            if (justifyWidth <= 0) return;
+	
+	            // Pass 2: Take leftover width, and distribute it to proportionately to
+	            // all notes.
+	            var remainingX = justifyWidth - this.minTotalWidth;
+	            var leftoverPxPerTick = remainingX / (this.totalTicks.value() * resolutionMultiplier);
+	            var spaceAccum = 0;
+	
+	            contextList.forEach(function (tick, index) {
+	                var prevTick = contextList[index - 1] || 0;
+	                var context = contextMap[tick];
+	                var tickSpace = (tick - prevTick) * leftoverPxPerTick;
+	
+	                spaceAccum += tickSpace;
+	                context.setX(context.getX() + spaceAccum);
+	
+	                // Move center aligned tickables to middle
+	                context.getCenterAlignedTickables().forEach(function (tickable) {
+	                    // eslint-disable-line
+	                    tickable.center_x_shift = centerX - context.getX();
+	                });
+	            });
+	
+	            // Just one context. Done formatting.
+	            if (contextList.length === 1) return;
+	
+	            this.justifyWidth = justifyWidth;
+	            this.lossHistory = [];
+	            this.evaluate();
+	        }
+	
+	        // Calculate the total cost of this formatting decision.
+	
+	    }, {
+	        key: 'evaluate',
+	        value: function evaluate() {
+	            var _this2 = this;
+	
+	            var justifyWidth = this.justifyWidth;
+	            // Calculate available slack per tick context. This works out how much freedom
+	            // to move a context has in either direction, without affecting other notes.
+	            this.contextGaps = { total: 0, gaps: [] };
+	            this.tickContexts.list.forEach(function (tick, index) {
+	                if (index === 0) return;
+	                var prevTick = _this2.tickContexts.list[index - 1];
+	                var prevContext = _this2.tickContexts.map[prevTick];
+	                var context = _this2.tickContexts.map[tick];
+	                var prevMetrics = prevContext.getMetrics();
+	
+	                var insideRightEdge = prevContext.getX() + prevMetrics.width;
+	                var insideLeftEdge = context.getX();
+	                var gap = insideLeftEdge - insideRightEdge;
+	                _this2.contextGaps.total += gap;
+	                _this2.contextGaps.gaps.push({ x1: insideRightEdge, x2: insideLeftEdge });
+	
+	                // Tell the tick contexts how much they can reposition themselves.
+	                context.getFormatterMetrics().freedom.left = gap;
+	                prevContext.getFormatterMetrics().freedom.right = gap;
+	            });
+	
+	            // Calculate mean distance in each voice for each duration type, then calculate
+	            // how far each note is from the mean.
+	            var durationStats = this.durationStats = {};
+	
+	            function updateStats(duration, space) {
+	                var stats = durationStats[duration];
+	                if (stats === undefined) {
+	                    durationStats[duration] = { mean: space, count: 1 };
+	                } else {
+	                    stats.count += 1;
+	                    stats.mean = (stats.mean + space) / 2;
+	                }
+	            }
+	
+	            this.voices.forEach(function (voice) {
+	                voice.getTickables().forEach(function (note, i, notes) {
+	                    var duration = note.getTicks().clone().simplify().toString();
+	                    var metrics = note.getMetrics();
+	                    var formatterMetrics = note.getFormatterMetrics();
+	                    var leftNoteEdge = note.getX() + metrics.noteWidth + metrics.modRightPx + metrics.extraRightPx;
+	                    var space = 0;
+	
+	                    if (i < notes.length - 1) {
+	                        var rightNote = notes[i + 1];
+	                        var rightMetrics = rightNote.getMetrics();
+	                        var rightNoteEdge = rightNote.getX() - rightMetrics.modLeftPx - rightMetrics.extraLeftPx;
+	
+	                        space = rightNoteEdge - leftNoteEdge;
+	                        formatterMetrics.space.used = rightNote.getX() - note.getX();
+	                        rightNote.getFormatterMetrics().freedom.left = space;
+	                    } else {
+	                        space = justifyWidth - leftNoteEdge;
+	                        formatterMetrics.space.used = justifyWidth - note.getX();
+	                    }
+	
+	                    formatterMetrics.freedom.right = space;
+	                    updateStats(duration, formatterMetrics.space.used);
+	                });
+	            });
+	
+	            // Calculate how much each note deviates from the mean. Loss function is square
+	            // root of the sum of squared deviations.
+	            var totalDeviation = 0;
+	            this.voices.forEach(function (voice) {
+	                voice.getTickables().forEach(function (note) {
+	                    var duration = note.getTicks().clone().simplify().toString();
+	                    var metrics = note.getFormatterMetrics();
+	                    metrics.iterations += 1;
+	                    metrics.space.deviation = metrics.space.used - durationStats[duration].mean;
+	                    metrics.duration = duration;
+	                    metrics.space.mean = durationStats[duration].mean;
+	
+	                    totalDeviation += Math.pow(durationStats[duration].mean, 2);
+	                });
+	            });
+	
+	            this.totalCost = Math.sqrt(totalDeviation);
+	            this.lossHistory.push(this.totalCost);
+	            return this;
+	        }
+	
+	        // Run a single iteration of rejustification. At a high level, this method calculates
+	        // the overall "loss" (or cost) of this layout, and repositions tickcontexts in an
+	        // attempt to reduce the cost. You can call this method multiple times until it finds
+	        // and oscillates around a global minimum.
+	
+	    }, {
+	        key: 'tune',
+	        value: function tune() {
+	            var _this3 = this;
+	
+	            var sum = function sum(means) {
+	                return means.reduce(function (a, b) {
+	                    return a + b;
+	                });
+	            };
+	
+	            // Move `current` tickcontext by `shift` pixels, and adjust the freedom
+	            // on adjacent tickcontexts.
+	            function move(current, prev, next, shift) {
+	                current.setX(current.getX() + shift);
+	                current.getFormatterMetrics().freedom.left += shift;
+	                current.getFormatterMetrics().freedom.right -= shift;
+	
+	                if (prev) prev.getFormatterMetrics().freedom.right += shift;
+	                if (next) next.getFormatterMetrics().freedom.left -= shift;
+	            }
+	
+	            var shift = 0;
+	            this.tickContexts.list.forEach(function (tick, index, list) {
+	                var context = _this3.tickContexts.map[tick];
+	                var prevContext = index > 0 ? _this3.tickContexts.map[list[index - 1]] : null;
+	                var nextContext = index < list.length - 1 ? _this3.tickContexts.map[list[index + 1]] : null;
+	
+	                move(context, prevContext, nextContext, shift);
+	
+	                var cost = -sum(context.getTickables().map(function (t) {
+	                    return t.getFormatterMetrics().space.deviation;
+	                }));
+	
+	                if (cost > 0) {
+	                    shift = -Math.min(context.getFormatterMetrics().freedom.right, Math.abs(cost));
+	                } else if (cost < 0) {
+	                    if (nextContext) {
+	                        shift = Math.min(nextContext.getFormatterMetrics().freedom.right, Math.abs(cost));
+	                    } else {
+	                        shift = 0;
+	                    }
+	                }
+	
+	                var minShift = Math.min(5, Math.abs(shift));
+	                shift = shift > 0 ? minShift : -minShift;
+	            });
+	
+	            return this.evaluate();
+	        }
+	
+	        // This is the top-level call for all formatting logic completed
+	        // after `x` *and* `y` values have been computed for the notes
+	        // in the voices.
+	
+	    }, {
+	        key: 'postFormat',
+	        value: function postFormat() {
+	            var postFormatContexts = function postFormatContexts(contexts) {
+	                return contexts.list.forEach(function (tick) {
+	                    return contexts.map[tick].postFormat();
+	                });
+	            };
+	
+	            postFormatContexts(this.modiferContexts);
+	            postFormatContexts(this.tickContexts);
+	
+	            return this;
+	        }
+	
+	        // Take all `voices` and create `ModifierContext`s out of them. This tells
+	        // the formatters that the voices belong on a single stave.
+	
+	    }, {
+	        key: 'joinVoices',
+	        value: function joinVoices(voices) {
+	            this.createModifierContexts(voices);
+	            this.hasMinTotalWidth = false;
+	            return this;
+	        }
+	
+	        // Align rests in voices, justify the contexts, and position the notes
+	        // so voices are aligned and ready to render onto the stave. This method
+	        // mutates the `x` positions of all tickables in `voices`.
+	        //
+	        // Voices are full justified to fit in `justifyWidth` pixels.
+	        //
+	        // Set `options.context` to the rendering context. Set `options.align_rests`
+	        // to true to enable rest alignment.
+	
+	    }, {
+	        key: 'format',
+	        value: function format(voices, justifyWidth, options) {
+	            var opts = {
+	                align_rests: false,
+	                context: null,
+	                stave: null
+	            };
+	
+	            _vex.Vex.Merge(opts, options);
+	            this.voices = voices;
+	            this.alignRests(voices, opts.align_rests);
+	            this.createTickContexts(voices);
+	            this.preFormat(justifyWidth, opts.context, voices, opts.stave);
+	
+	            // Only postFormat if a stave was supplied for y value formatting
+	            if (opts.stave) this.postFormat();
+	
+	            return this;
+	        }
+	
+	        // This method is just like `format` except that the `justifyWidth` is inferred
+	        // from the `stave`.
+	
+	    }, {
+	        key: 'formatToStave',
+	        value: function formatToStave(voices, stave, options) {
+	            var justifyWidth = stave.getNoteEndX() - stave.getNoteStartX() - 10;
+	            L('Formatting voices to width: ', justifyWidth);
+	            var opts = { context: stave.getContext() };
+	            _vex.Vex.Merge(opts, options);
+	            return this.format(voices, justifyWidth, opts);
+	        }
+	    }]);
 
-	  return Formatter;
+	    return Formatter;
 	}();
 
 /***/ }),
@@ -7656,6 +7656,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _dot = __webpack_require__(26);
 	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -8105,7 +8107,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    }, {
 	        key: 'buildNoteHeads',
-	        value: function buildNoteHeads() {
+	        value: function buildNoteHeads(noteHeadStyle) {
+	            noteHeadStyle = noteHeadStyle || {
+	                'shadowBlur': 0,
+	                'shadowColor': '#8c8c8c',
+	                'fillStyle': '#8c8c8c',
+	                'strokeStyle': '#8c8c8c'
+	            };
 	            this.note_heads = [];
 	            var stemDirection = this.getStemDirection();
 	            var keys = this.getKeys();
@@ -8158,11 +8166,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    glyph_font_scale: this.render_options.glyph_font_scale,
 	                    x_shift: noteProps.shift_right,
 	                    line: noteProps.line,
-	                    style: {
-	                        'shadowBlur': 0,
-	                        'shadowColor': '#8c8c8c',
-	                        'fillStyle': '#8c8c8c',
-	                        'strokeStyle': '#8c8c8c' }
+	                    style: noteHeadStyle
 	                });
 	
 	                this.note_heads[i] = notehead;
@@ -8237,17 +8241,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	
 	            // Sort the notes from lowest line to highest line
-	            // lastLine = -Infinity;
-	            // this.keyProps.forEach(key => {
-	            //   if (key.line < lastLine) {
-	            //     Vex.W(
-	            //       'Unsorted keys in note will be sorted. ' +
-	            //       'See https://github.com/0xfe/vexflow/issues/104 for details.'
-	            //     );
-	            //   }
-	            //   lastLine = key.line;
-	            // });
-	            // this.keyProps.sort((a, b) => a.line - b.line);
+	            lastLine = -Infinity;
+	            var oldKeyProps = [].concat(_toConsumableArray(this.keyProps));
+	            oldKeyProps.forEach(function (key) {
+	                // if (key.line < lastLine) {
+	                //     Vex.W(
+	                //         'Unsorted keys in note will be sorted. ' +
+	                //         'See https://github.com/0xfe/vexflow/issues/104 for details.'
+	                //     );
+	                // }
+	                lastLine = key.line;
+	            });
+	            this.keyProps.sort(function (a, b) {
+	                return a.line - b.line;
+	            });
+	            // sort keys
+	            this.setKeysFromKeyProps();
+	        }
+	    }, {
+	        key: 'accidentalToLowerCase',
+	        value: function accidentalToLowerCase(key) {
+	            var keyCopy = (' ' + key).slice(1);
+	            if (keyCopy.length > 1) {
+	                var _key2 = keyCopy.slice(0, 1);
+	                var lowercaseAccidental = keyCopy.slice(1, keyCopy.length).toLowerCase();
+	                keyCopy = _key2 + lowercaseAccidental;
+	            }
+	
+	            return keyCopy;
+	        }
+	    }, {
+	        key: 'setKeysFromKeyProps',
+	        value: function setKeysFromKeyProps() {
+	            var _this3 = this;
+	
+	            var newKeys = [];
+	
+	            this.keyProps.forEach(function (keyProp) {
+	                var newKey = _this3.accidentalToLowerCase(keyProp.key);
+	                newKeys.push(newKey + '/' + keyProp.octave);
+	            });
+	
+	            this.setKeys(newKeys);
 	        }
 	
 	        // Get the `BoundingBox` for the entire note
@@ -8582,6 +8617,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.setPreFormatted(false);
 	            return this;
 	        }
+	    }, {
+	        key: 'getModifierContext',
+	        value: function getModifierContext() {
+	            return this.modifierContext;
+	        }
 	
 	        // Generic function to add modifiers to a note
 	        //
@@ -8598,6 +8638,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.setPreFormatted(false);
 	            return this;
 	        }
+	    }, {
+	        key: 'getModifiers',
+	        value: function getModifiers() {
+	            return this.modifiers;
+	        }
 	
 	        // Helper function to add an accidental to a key
 	
@@ -8610,6 +8655,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'removeAccidental',
 	        value: function removeAccidental(index) {
 	            this.modifiers.splice(index, 1);
+	        }
+	    }, {
+	        key: 'removeModifiers',
+	        value: function removeModifiers() {
+	            this.modifiers = [];
 	        }
 	
 	        // Helper function to add an articulation to a key
@@ -8766,7 +8816,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'drawLedgerLines',
 	        value: function drawLedgerLines() {
-	            var _this3 = this;
+	            var _this4 = this;
 	
 	            var note_heads = this.note_heads,
 	                stave = this.stave,
@@ -8790,7 +8840,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            var drawLedgerLine = function drawLedgerLine(y) {
 	                if (use_default_head_x === true) {
-	                    headX = _this3.getAbsoluteX() + x_shift;
+	                    headX = _this4.getAbsoluteX() + x_shift;
 	                }
 	                var x = headX - stroke_px;
 	                var length = headX + glyph.getWidth() - headX + stroke_px * 2;
@@ -8918,12 +8968,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'drawNoteHeads',
 	        value: function drawNoteHeads() {
-	            var _this4 = this;
+	            var _this5 = this;
 	
 	            this.note_heads.forEach(function (notehead) {
-	                _this4.context.openGroup('notehead', null, { pointerBBox: true });
-	                notehead.setContext(_this4.context).draw();
-	                _this4.context.closeGroup();
+	                _this5.context.openGroup('notehead', null, { pointerBBox: true });
+	                notehead.setContext(_this5.context).draw();
+	                _this5.context.closeGroup();
 	            });
 	        }
 	
@@ -8994,8 +9044,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.setStyle(highlightPlayerNoteStyle);
 	            } else if (highlight) {
 	                this.setStyle(highlightNoteStyle);
-	
-	                if (keyIndex) {
+	                if (keyIndex >= 0) {
 	                    this.setKeyStyle(keyIndex, highlightKeyStyle);
 	                }
 	            } else {
@@ -9047,9 +9096,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            for (var i = 0; i < this.keys.length; i++) {
 	                var key = this.keys[i].replace('/', '');
 	                key = key.replace('#', '');
-	                key = key.replace('#', '');
+	                key = key.replace('##', '');
 	                key = key.replace('b', '');
-	                key = key.replace('b', '');
+	                key = key.replace('bb', '');
 	                key = key.replace('n', '');
 	                notes.push(MIDI.keyToNote[key]);
 	            }
@@ -11523,7 +11572,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	exports.Accidental = undefined;
 	
@@ -11562,601 +11611,602 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// To enable logging for this class. Set `Vex.Flow.Accidental.DEBUG` to `true`.
 	function L() {
-	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	    args[_key] = arguments[_key];
-	  }
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	    }
 	
-	  if (Accidental.DEBUG) _vex.Vex.L('Vex.Flow.Accidental', args);
+	    if (Accidental.DEBUG) _vex.Vex.L('Vex.Flow.Accidental', args);
 	}
 	
 	var getGlyphWidth = function getGlyphWidth(glyph) {
-	  return glyph.getMetrics().width;
+	    return glyph.getMetrics().width;
 	};
 	// An `Accidental` inherits from `Modifier`, and is formatted within a
 	// `ModifierContext`.
 	
 	var Accidental = exports.Accidental = function (_Modifier) {
-	  _inherits(Accidental, _Modifier);
+	    _inherits(Accidental, _Modifier);
 	
-	  _createClass(Accidental, null, [{
-	    key: 'format',
+	    _createClass(Accidental, null, [{
+	        key: 'format',
 	
 	
-	    // Arrange accidentals inside a ModifierContext.
-	    value: function format(accidentals, state) {
-	      var _this2 = this;
+	        // Arrange accidentals inside a ModifierContext.
+	        value: function format(accidentals, state) {
+	            var _this2 = this;
 	
-	      var noteheadAccidentalPadding = 1;
-	      var leftShift = state.left_shift + noteheadAccidentalPadding;
-	      var accidentalSpacing = 3;
+	            var noteheadAccidentalPadding = 1;
+	            var leftShift = state.left_shift + noteheadAccidentalPadding;
+	            var accidentalSpacing = 3;
 	
-	      // If there are no accidentals, we needn't format their positions
-	      if (!accidentals || accidentals.length === 0) return;
+	            // If there are no accidentals, we needn't format their positions
+	            if (!accidentals || accidentals.length === 0) return;
 	
-	      var accList = [];
-	      var prevNote = null;
-	      var shiftL = 0;
+	            var accList = [];
+	            var prevNote = null;
+	            var shiftL = 0;
 	
-	      // First determine the accidentals' Y positions from the note.keys
-	      var propsTemp = void 0;
-	      for (var i = 0; i < accidentals.length; ++i) {
-	        var acc = accidentals[i];
-	        var note = acc.getNote();
-	        var stave = note.getStave();
-	        var props = note.getKeyProps()[acc.getIndex()];
-	        if (note !== prevNote) {
-	          // Iterate through all notes to get the displaced pixels
-	          for (var n = 0; n < note.keys.length; ++n) {
-	            propsTemp = note.getKeyProps()[n];
-	            shiftL = propsTemp.displaced ? note.getExtraLeftPx() : shiftL;
-	          }
-	          prevNote = note;
+	            // First determine the accidentals' Y positions from the note.keys
+	            var propsTemp = void 0;
+	            for (var i = 0; i < accidentals.length; ++i) {
+	                var acc = accidentals[i];
+	                var note = acc.getNote();
+	                var stave = note.getStave();
+	                var props = note.getKeyProps()[acc.getIndex()] || {};
+	                if (note !== prevNote) {
+	                    // Iterate through all notes to get the displaced pixels
+	                    for (var n = 0; n < note.keys.length; ++n) {
+	                        propsTemp = note.getKeyProps()[n];
+	                        shiftL = propsTemp.displaced ? note.getExtraLeftPx() : shiftL;
+	                    }
+	                    prevNote = note;
+	                }
+	                if (stave !== null) {
+	                    var lineSpace = stave.options.spacing_between_lines_px;
+	                    var y = stave.getYForLine(props.line);
+	                    var accLine = Math.round(y / lineSpace * 2) / 2;
+	                    // console.log({ y, line: accLine, shift: shiftL, acc, lineSpace });
+	                    accList.push({ y: y, line: accLine, shift: shiftL, acc: acc, lineSpace: lineSpace });
+	                } else {
+	                    accList.push({ line: props.line, shift: shiftL, acc: acc });
+	                }
+	            }
+	
+	            // Sort accidentals by line number.
+	            accList.sort(function (a, b) {
+	                return b.line - a.line;
+	            });
+	
+	            // FIXME: Confusing name. Each object in this array has a property called `line`.
+	            // So if this is a list of lines, you end up with: `line.line` which is very awkward.
+	            var lineList = [];
+	
+	            // amount by which all accidentals must be shifted right or left for
+	            // stem flipping, notehead shifting concerns.
+	            var accShift = 0;
+	            var previousLine = null;
+	
+	            // Create an array of unique line numbers (lineList) from accList
+	            for (var _i = 0; _i < accList.length; _i++) {
+	                var _acc = accList[_i];
+	
+	                // if this is the first line, or a new line, add a lineList
+	                if (previousLine === null || previousLine !== _acc.line) {
+	                    lineList.push({
+	                        line: _acc.line,
+	                        flatLine: true,
+	                        dblSharpLine: true,
+	                        numAcc: 0,
+	                        width: 0
+	                    });
+	                }
+	                // if this accidental is not a flat, the accidental needs 3.0 lines lower
+	                // clearance instead of 2.5 lines for b or bb.
+	                // FIXME: Naming could use work. acc.acc is very awkward
+	                if (_acc.acc.type !== 'b' && _acc.acc.type !== 'bb') {
+	                    lineList[lineList.length - 1].flatLine = false;
+	                }
+	
+	                // if this accidental is not a double sharp, the accidental needs 3.0 lines above
+	                if (_acc.acc.type !== '##') {
+	                    lineList[lineList.length - 1].dblSharpLine = false;
+	                }
+	
+	                // Track how many accidentals are on this line:
+	                lineList[lineList.length - 1].numAcc++;
+	
+	                // Track the total x_offset needed for this line which will be needed
+	                // for formatting lines w/ multiple accidentals:
+	
+	                // width = accidental width + universal spacing between accidentals
+	                lineList[lineList.length - 1].width += _acc.acc.getWidth() + accidentalSpacing;
+	
+	                // if this accShift is larger, use it to keep first column accidentals in the same line
+	                accShift = _acc.shift > accShift ? _acc.shift : accShift;
+	
+	                previousLine = _acc.line;
+	            }
+	
+	            // ### Place Accidentals in Columns
+	            //
+	            // Default to a classic triangular layout (middle accidental farthest left),
+	            // but follow exceptions as outlined in G. Read's _Music Notation_ and
+	            // Elaine Gould's _Behind Bars_.
+	            //
+	            // Additionally, this implements different vertical collision rules for
+	            // flats (only need 2.5 lines clearance below) and double sharps (only
+	            // need 2.5 lines of clearance above or below).
+	            //
+	            // Classic layouts and exception patterns are found in the 'tables.js'
+	            // in 'Vex.Flow.accidentalColumnsTable'
+	            //
+	            // Beyond 6 vertical accidentals, default to the parallel ascending lines approach,
+	            // using as few columns as possible for the verticle structure.
+	            //
+	            // TODO (?): Allow column to be specified for an accidental at run-time?
+	
+	            var totalColumns = 0;
+	
+	            // establish the boundaries for a group of notes with clashing accidentals:
+	
+	            var _loop = function _loop(_i3) {
+	                var noFurtherConflicts = false;
+	                var groupStart = _i3;
+	                var groupEnd = _i3;
+	
+	                while (groupEnd + 1 < lineList.length && !noFurtherConflicts) {
+	                    // if this note conflicts with the next:
+	                    if (_this2.checkCollision(lineList[groupEnd], lineList[groupEnd + 1])) {
+	                        // include the next note in the group:
+	                        groupEnd++;
+	                    } else {
+	                        noFurtherConflicts = true;
+	                    }
+	                }
+	
+	                // Gets an a line from the `lineList`, relative to the current group
+	                var getGroupLine = function getGroupLine(index) {
+	                    return lineList[groupStart + index];
+	                };
+	                var getGroupLines = function getGroupLines(indexes) {
+	                    return indexes.map(getGroupLine);
+	                };
+	                var lineDifference = function lineDifference(indexA, indexB) {
+	                    var _getGroupLines$map = getGroupLines([indexA, indexB]).map(function (item) {
+	                        return item.line;
+	                    }),
+	                        _getGroupLines$map2 = _slicedToArray(_getGroupLines$map, 2),
+	                        a = _getGroupLines$map2[0],
+	                        b = _getGroupLines$map2[1];
+	
+	                    return a - b;
+	                };
+	
+	                var notColliding = function notColliding() {
+	                    for (var _len2 = arguments.length, indexPairs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	                        indexPairs[_key2] = arguments[_key2];
+	                    }
+	
+	                    return indexPairs.map(getGroupLines).every(function (lines) {
+	                        return !_this2.checkCollision.apply(_this2, _toConsumableArray(lines));
+	                    });
+	                };
+	
+	                // Set columns for the lines in this group:
+	                var groupLength = groupEnd - groupStart + 1;
+	
+	                // Set the accidental column for each line of the group
+	                var endCase = _this2.checkCollision(lineList[groupStart], lineList[groupEnd]) ? 'a' : 'b';
+	
+	                switch (groupLength) {
+	                    case 3:
+	                        if (endCase === 'a' && lineDifference(1, 2) === 0.5 && lineDifference(0, 1) !== 0.5) {
+	                            endCase = 'second_on_bottom';
+	                        }
+	                        break;
+	                    case 4:
+	                        if (notColliding([0, 2], [1, 3])) {
+	                            endCase = 'spaced_out_tetrachord';
+	                        }
+	                        break;
+	                    case 5:
+	                        if (endCase === 'b' && notColliding([1, 3])) {
+	                            endCase = 'spaced_out_pentachord';
+	                            if (notColliding([0, 2], [2, 4])) {
+	                                endCase = 'very_spaced_out_pentachord';
+	                            }
+	                        }
+	                        break;
+	                    case 6:
+	                        if (notColliding([0, 3], [1, 4], [2, 5])) {
+	                            endCase = 'spaced_out_hexachord';
+	                        }
+	                        if (notColliding([0, 2], [2, 4], [1, 3], [3, 5])) {
+	                            endCase = 'very_spaced_out_hexachord';
+	                        }
+	                        break;
+	                    default:
+	                        break;
+	                }
+	
+	                var groupMember = void 0;
+	                var column = void 0;
+	                // If the group contains more than seven members, use ascending parallel lines
+	                // of accidentals, using as few columns as possible while avoiding collisions.
+	                if (groupLength >= 7) {
+	                    // First, determine how many columns to use:
+	                    var patternLength = 2;
+	                    var collisionDetected = true;
+	                    while (collisionDetected === true) {
+	                        collisionDetected = false;
+	                        for (var line = 0; line + patternLength < lineList.length; line++) {
+	                            if (_this2.checkCollision(lineList[line], lineList[line + patternLength])) {
+	                                collisionDetected = true;
+	                                patternLength++;
+	                                break;
+	                            }
+	                        }
+	                    }
+	                    // Then, assign a column to each line of accidentals
+	                    for (groupMember = _i3; groupMember <= groupEnd; groupMember++) {
+	                        column = (groupMember - _i3) % patternLength + 1;
+	                        lineList[groupMember].column = column;
+	                        totalColumns = totalColumns > column ? totalColumns : column;
+	                    }
+	
+	                    // Otherwise, if the group contains fewer than seven members, use the layouts from
+	                    // the accidentalsColumnsTable housed in tables.js.
+	                } else {
+	                    for (groupMember = _i3; groupMember <= groupEnd; groupMember++) {
+	                        column = _tables.Flow.accidentalColumnsTable[groupLength][endCase][groupMember - _i3];
+	                        lineList[groupMember].column = column;
+	                        totalColumns = totalColumns > column ? totalColumns : column;
+	                    }
+	                }
+	
+	                // Increment i to the last note that was set, so that if a lower set of notes
+	                // does not conflict at all with this group, it can have its own classic shape.
+	                _i3 = groupEnd;
+	                _i2 = _i3;
+	            };
+	
+	            for (var _i2 = 0; _i2 < lineList.length; _i2++) {
+	                _loop(_i2);
+	            }
+	
+	            // ### Convert Columns to x_offsets
+	            //
+	            // This keeps columns aligned, even if they have different accidentals within them
+	            // which sometimes results in a larger x_offset than is an accidental might need
+	            // to preserve the symmetry of the accidental shape.
+	            //
+	            // Neither A.C. Vinci nor G. Read address this, and it typically only happens in
+	            // music with complex chord clusters.
+	            //
+	            // TODO (?): Optionally allow closer compression of accidentals, instead of forcing
+	            // parallel columns.
+	
+	            // track each column's max width, which will be used as initial shift of later columns:
+	            var columnWidths = [];
+	            var columnXOffsets = [];
+	            for (var _i4 = 0; _i4 <= totalColumns; _i4++) {
+	                columnWidths[_i4] = 0;
+	                columnXOffsets[_i4] = 0;
+	            }
+	
+	            columnWidths[0] = accShift + leftShift;
+	            columnXOffsets[0] = accShift + leftShift;
+	
+	            // Fill columnWidths with widest needed x-space;
+	            // this is what keeps the columns parallel.
+	            lineList.forEach(function (line) {
+	                if (line.width > columnWidths[line.column]) columnWidths[line.column] = line.width;
+	            });
+	
+	            for (var _i5 = 1; _i5 < columnWidths.length; _i5++) {
+	                // this column's offset = this column's width + previous column's offset
+	                columnXOffsets[_i5] = columnWidths[_i5] + columnXOffsets[_i5 - 1];
+	            }
+	
+	            var totalShift = columnXOffsets[columnXOffsets.length - 1];
+	            // Set the xShift for each accidental according to column offsets:
+	            var accCount = 0;
+	            lineList.forEach(function (line) {
+	                var lineWidth = 0;
+	                var lastAccOnLine = accCount + line.numAcc;
+	                // handle all of the accidentals on a given line:
+	                for (accCount; accCount < lastAccOnLine; accCount++) {
+	                    var xShift = columnXOffsets[line.column - 1] + lineWidth;
+	                    accList[accCount].acc.setXShift(xShift);
+	                    // keep track of the width of accidentals we've added so far, so that when
+	                    // we loop, we add space for them.
+	                    lineWidth += accList[accCount].acc.getWidth() + accidentalSpacing;
+	                    L('Line, accCount, shift: ', line.line, accCount, xShift);
+	                }
+	            });
+	
+	            // update the overall layout with the full width of the accidental shapes:
+	            state.left_shift += totalShift;
 	        }
-	        if (stave !== null) {
-	          var lineSpace = stave.options.spacing_between_lines_px;
-	          var y = stave.getYForLine(props.line);
-	          var accLine = Math.round(y / lineSpace * 2) / 2;
-	          accList.push({ y: y, line: accLine, shift: shiftL, acc: acc, lineSpace: lineSpace });
-	        } else {
-	          accList.push({ line: props.line, shift: shiftL, acc: acc });
-	        }
-	      }
 	
-	      // Sort accidentals by line number.
-	      accList.sort(function (a, b) {
-	        return b.line - a.line;
-	      });
+	        // Helper function to determine whether two lines of accidentals collide vertically
 	
-	      // FIXME: Confusing name. Each object in this array has a property called `line`.
-	      // So if this is a list of lines, you end up with: `line.line` which is very awkward.
-	      var lineList = [];
-	
-	      // amount by which all accidentals must be shifted right or left for
-	      // stem flipping, notehead shifting concerns.
-	      var accShift = 0;
-	      var previousLine = null;
-	
-	      // Create an array of unique line numbers (lineList) from accList
-	      for (var _i = 0; _i < accList.length; _i++) {
-	        var _acc = accList[_i];
-	
-	        // if this is the first line, or a new line, add a lineList
-	        if (previousLine === null || previousLine !== _acc.line) {
-	          lineList.push({
-	            line: _acc.line,
-	            flatLine: true,
-	            dblSharpLine: true,
-	            numAcc: 0,
-	            width: 0
-	          });
-	        }
-	        // if this accidental is not a flat, the accidental needs 3.0 lines lower
-	        // clearance instead of 2.5 lines for b or bb.
-	        // FIXME: Naming could use work. acc.acc is very awkward
-	        if (_acc.acc.type !== 'b' && _acc.acc.type !== 'bb') {
-	          lineList[lineList.length - 1].flatLine = false;
+	    }, {
+	        key: 'checkCollision',
+	        value: function checkCollision(line1, line2) {
+	            var clearance = line2.line - line1.line;
+	            var clearanceRequired = 3;
+	            // But less clearance is required for certain accidentals: b, bb and ##.
+	            if (clearance > 0) {
+	                // then line 2 is on top
+	                clearanceRequired = line2.flatLine || line2.dblSharpLine ? 2.5 : 3.0;
+	                if (line1.dblSharpLine) clearance -= 0.5;
+	            } else {
+	                // line 1 is on top
+	                clearanceRequired = line1.flatLine || line1.dblSharpLine ? 2.5 : 3.0;
+	                if (line2.dblSharpLine) clearance -= 0.5;
+	            }
+	            var collision = Math.abs(clearance) < clearanceRequired;
+	            L('Line_1, Line_2, Collision: ', line1.line, line2.line, collision);
+	            return collision;
 	        }
 	
-	        // if this accidental is not a double sharp, the accidental needs 3.0 lines above
-	        if (_acc.acc.type !== '##') {
-	          lineList[lineList.length - 1].dblSharpLine = false;
+	        // Use this method to automatically apply accidentals to a set of `voices`.
+	        // The accidentals will be remembered between all the voices provided.
+	        // Optionally, you can also provide an initial `keySignature`.
+	
+	    }, {
+	        key: 'applyAccidentals',
+	        value: function applyAccidentals(voices, keySignature) {
+	            var tickPositions = [];
+	            var tickNoteMap = {};
+	
+	            // Sort the tickables in each voice by their tick position in the voice
+	            voices.forEach(function (voice) {
+	                var tickPosition = new _fraction.Fraction(0, 1);
+	                var notes = voice.getTickables();
+	                notes.forEach(function (note) {
+	                    if (note.shouldIgnoreTicks()) return;
+	
+	                    var notesAtPosition = tickNoteMap[tickPosition.value()];
+	
+	                    if (!notesAtPosition) {
+	                        tickPositions.push(tickPosition.value());
+	                        tickNoteMap[tickPosition.value()] = [note];
+	                    } else {
+	                        notesAtPosition.push(note);
+	                    }
+	
+	                    tickPosition.add(note.getTicks());
+	                });
+	            });
+	
+	            var music = new _music.Music();
+	
+	            // Default key signature is C major
+	            if (!keySignature) keySignature = 'C';
+	
+	            // Get the scale map, which represents the current state of each pitch
+	            var scaleMap = music.createScaleMap(keySignature);
+	
+	            tickPositions.forEach(function (tick) {
+	                var notes = tickNoteMap[tick];
+	
+	                // Array to store all pitches that modified accidental states
+	                // at this tick position
+	                var modifiedPitches = [];
+	
+	                var processNote = function processNote(note) {
+	                    if (note.isRest() || note.shouldIgnoreTicks()) return;
+	
+	                    // Go through each key and determine if an accidental should be
+	                    // applied
+	                    note.keys.forEach(function (keyString, keyIndex) {
+	                        var key = music.getNoteParts(keyString.split('/')[0]);
+	
+	                        // Force a natural for every key without an accidental
+	                        var accidentalString = key.accidental || 'n';
+	                        var pitch = key.root + accidentalString;
+	
+	                        // Determine if the current pitch has the same accidental
+	                        // as the scale state
+	                        var sameAccidental = scaleMap[key.root] === pitch;
+	
+	                        // Determine if an identical pitch in the chord already
+	                        // modified the accidental state
+	                        var previouslyModified = modifiedPitches.indexOf(pitch) > -1;
+	
+	                        // Add the accidental to the StaveNote
+	                        if (!sameAccidental || sameAccidental && previouslyModified) {
+	                            // Modify the scale map so that the root pitch has an
+	                            // updated state
+	                            scaleMap[key.root] = pitch;
+	
+	                            // Create the accidental
+	                            var accidental = new Accidental(accidentalString);
+	
+	                            // Attach the accidental to the StaveNote
+	                            note.addAccidental(keyIndex, accidental);
+	
+	                            // Add the pitch to list of pitches that modified accidentals
+	                            modifiedPitches.push(pitch);
+	                        }
+	                    });
+	
+	                    // process grace notes
+	                    note.getModifiers().forEach(function (modifier) {
+	                        if (modifier.getCategory() === 'gracenotegroups') {
+	                            modifier.getGraceNotes().forEach(processNote);
+	                        }
+	                    });
+	                };
+	
+	                notes.forEach(processNote);
+	            });
 	        }
 	
-	        // Track how many accidentals are on this line:
-	        lineList[lineList.length - 1].numAcc++;
+	        // Create accidental. `type` can be a value from the
+	        // `Vex.Flow.accidentalCodes.accidentals` table in `tables.js`. For
+	        // example: `#`, `##`, `b`, `n`, etc.
 	
-	        // Track the total x_offset needed for this line which will be needed
-	        // for formatting lines w/ multiple accidentals:
-	
-	        // width = accidental width + universal spacing between accidentals
-	        lineList[lineList.length - 1].width += _acc.acc.getWidth() + accidentalSpacing;
-	
-	        // if this accShift is larger, use it to keep first column accidentals in the same line
-	        accShift = _acc.shift > accShift ? _acc.shift : accShift;
-	
-	        previousLine = _acc.line;
-	      }
-	
-	      // ### Place Accidentals in Columns
-	      //
-	      // Default to a classic triangular layout (middle accidental farthest left),
-	      // but follow exceptions as outlined in G. Read's _Music Notation_ and
-	      // Elaine Gould's _Behind Bars_.
-	      //
-	      // Additionally, this implements different vertical collision rules for
-	      // flats (only need 2.5 lines clearance below) and double sharps (only
-	      // need 2.5 lines of clearance above or below).
-	      //
-	      // Classic layouts and exception patterns are found in the 'tables.js'
-	      // in 'Vex.Flow.accidentalColumnsTable'
-	      //
-	      // Beyond 6 vertical accidentals, default to the parallel ascending lines approach,
-	      // using as few columns as possible for the verticle structure.
-	      //
-	      // TODO (?): Allow column to be specified for an accidental at run-time?
-	
-	      var totalColumns = 0;
-	
-	      // establish the boundaries for a group of notes with clashing accidentals:
-	
-	      var _loop = function _loop(_i3) {
-	        var noFurtherConflicts = false;
-	        var groupStart = _i3;
-	        var groupEnd = _i3;
-	
-	        while (groupEnd + 1 < lineList.length && !noFurtherConflicts) {
-	          // if this note conflicts with the next:
-	          if (_this2.checkCollision(lineList[groupEnd], lineList[groupEnd + 1])) {
-	            // include the next note in the group:
-	            groupEnd++;
-	          } else {
-	            noFurtherConflicts = true;
-	          }
+	    }, {
+	        key: 'CATEGORY',
+	        get: function get() {
+	            return 'accidentals';
 	        }
+	    }]);
 	
-	        // Gets an a line from the `lineList`, relative to the current group
-	        var getGroupLine = function getGroupLine(index) {
-	          return lineList[groupStart + index];
+	    function Accidental() {
+	        var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+	
+	        _classCallCheck(this, Accidental);
+	
+	        var _this = _possibleConstructorReturn(this, (Accidental.__proto__ || Object.getPrototypeOf(Accidental)).call(this));
+	
+	        _this.setAttribute('type', 'Accidental');
+	
+	        L('New accidental: ', type);
+	
+	        _this.note = null;
+	        // The `index` points to a specific note in a chord.
+	        _this.index = null;
+	        _this.type = type;
+	        _this.position = _modifier.Modifier.Position.LEFT;
+	
+	        _this.render_options = {
+	            // Font size for glyphs
+	            font_scale: 38,
+	
+	            // Length of stroke across heads above or below the stave.
+	            stroke_px: 3,
+	
+	            // Padding between accidental and parentheses on each side
+	            parenLeftPadding: 2,
+	            parenRightPadding: 2
 	        };
-	        var getGroupLines = function getGroupLines(indexes) {
-	          return indexes.map(getGroupLine);
-	        };
-	        var lineDifference = function lineDifference(indexA, indexB) {
-	          var _getGroupLines$map = getGroupLines([indexA, indexB]).map(function (item) {
-	            return item.line;
-	          }),
-	              _getGroupLines$map2 = _slicedToArray(_getGroupLines$map, 2),
-	              a = _getGroupLines$map2[0],
-	              b = _getGroupLines$map2[1];
 	
-	          return a - b;
-	        };
-	
-	        var notColliding = function notColliding() {
-	          for (var _len2 = arguments.length, indexPairs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-	            indexPairs[_key2] = arguments[_key2];
-	          }
-	
-	          return indexPairs.map(getGroupLines).every(function (lines) {
-	            return !_this2.checkCollision.apply(_this2, _toConsumableArray(lines));
-	          });
-	        };
-	
-	        // Set columns for the lines in this group:
-	        var groupLength = groupEnd - groupStart + 1;
-	
-	        // Set the accidental column for each line of the group
-	        var endCase = _this2.checkCollision(lineList[groupStart], lineList[groupEnd]) ? 'a' : 'b';
-	
-	        switch (groupLength) {
-	          case 3:
-	            if (endCase === 'a' && lineDifference(1, 2) === 0.5 && lineDifference(0, 1) !== 0.5) {
-	              endCase = 'second_on_bottom';
-	            }
-	            break;
-	          case 4:
-	            if (notColliding([0, 2], [1, 3])) {
-	              endCase = 'spaced_out_tetrachord';
-	            }
-	            break;
-	          case 5:
-	            if (endCase === 'b' && notColliding([1, 3])) {
-	              endCase = 'spaced_out_pentachord';
-	              if (notColliding([0, 2], [2, 4])) {
-	                endCase = 'very_spaced_out_pentachord';
-	              }
-	            }
-	            break;
-	          case 6:
-	            if (notColliding([0, 3], [1, 4], [2, 5])) {
-	              endCase = 'spaced_out_hexachord';
-	            }
-	            if (notColliding([0, 2], [2, 4], [1, 3], [3, 5])) {
-	              endCase = 'very_spaced_out_hexachord';
-	            }
-	            break;
-	          default:
-	            break;
+	        _this.accidental = _tables.Flow.accidentalCodes(_this.type);
+	        if (!_this.accidental) {
+	            throw new _vex.Vex.RERR('ArgumentError', 'Unknown accidental type: ' + type);
 	        }
 	
-	        var groupMember = void 0;
-	        var column = void 0;
-	        // If the group contains more than seven members, use ascending parallel lines
-	        // of accidentals, using as few columns as possible while avoiding collisions.
-	        if (groupLength >= 7) {
-	          // First, determine how many columns to use:
-	          var patternLength = 2;
-	          var collisionDetected = true;
-	          while (collisionDetected === true) {
-	            collisionDetected = false;
-	            for (var line = 0; line + patternLength < lineList.length; line++) {
-	              if (_this2.checkCollision(lineList[line], lineList[line + patternLength])) {
-	                collisionDetected = true;
-	                patternLength++;
-	                break;
-	              }
-	            }
-	          }
-	          // Then, assign a column to each line of accidentals
-	          for (groupMember = _i3; groupMember <= groupEnd; groupMember++) {
-	            column = (groupMember - _i3) % patternLength + 1;
-	            lineList[groupMember].column = column;
-	            totalColumns = totalColumns > column ? totalColumns : column;
-	          }
+	        // Cautionary accidentals have parentheses around them
+	        _this.cautionary = false;
+	        _this.parenLeft = null;
+	        _this.parenRight = null;
 	
-	          // Otherwise, if the group contains fewer than seven members, use the layouts from
-	          // the accidentalsColumnsTable housed in tables.js.
-	        } else {
-	          for (groupMember = _i3; groupMember <= groupEnd; groupMember++) {
-	            column = _tables.Flow.accidentalColumnsTable[groupLength][endCase][groupMember - _i3];
-	            lineList[groupMember].column = column;
-	            totalColumns = totalColumns > column ? totalColumns : column;
-	          }
+	        _this.reset();
+	        return _this;
+	    }
+	
+	    _createClass(Accidental, [{
+	        key: 'reset',
+	        value: function reset() {
+	            var fontScale = this.render_options.font_scale;
+	            this.glyph = new _glyph.Glyph(this.accidental.code, fontScale);
+	            this.glyph.setOriginX(1.0);
+	
+	            if (this.cautionary) {
+	                this.parenLeft = new _glyph.Glyph(_tables.Flow.accidentalCodes('{').code, fontScale);
+	                this.parenRight = new _glyph.Glyph(_tables.Flow.accidentalCodes('}').code, fontScale);
+	                this.parenLeft.setOriginX(1.0);
+	                this.parenRight.setOriginX(1.0);
+	            }
+	        }
+	    }, {
+	        key: 'getCategory',
+	        value: function getCategory() {
+	            return Accidental.CATEGORY;
+	        }
+	    }, {
+	        key: 'getWidth',
+	        value: function getWidth() {
+	            var parenWidth = this.cautionary ? getGlyphWidth(this.parenLeft) + getGlyphWidth(this.parenRight) + this.render_options.parenLeftPadding + this.render_options.parenRightPadding : 0;
+	
+	            return getGlyphWidth(this.glyph) + parenWidth;
 	        }
 	
-	        // Increment i to the last note that was set, so that if a lower set of notes
-	        // does not conflict at all with this group, it can have its own classic shape.
-	        _i3 = groupEnd;
-	        _i2 = _i3;
-	      };
+	        // Attach this accidental to `note`, which must be a `StaveNote`.
 	
-	      for (var _i2 = 0; _i2 < lineList.length; _i2++) {
-	        _loop(_i2);
-	      }
+	    }, {
+	        key: 'setNote',
+	        value: function setNote(note) {
+	            if (!note) {
+	                throw new _vex.Vex.RERR('ArgumentError', 'Bad note value: ' + note);
+	            }
 	
-	      // ### Convert Columns to x_offsets
-	      //
-	      // This keeps columns aligned, even if they have different accidentals within them
-	      // which sometimes results in a larger x_offset than is an accidental might need
-	      // to preserve the symmetry of the accidental shape.
-	      //
-	      // Neither A.C. Vinci nor G. Read address this, and it typically only happens in
-	      // music with complex chord clusters.
-	      //
-	      // TODO (?): Optionally allow closer compression of accidentals, instead of forcing
-	      // parallel columns.
+	            this.note = note;
 	
-	      // track each column's max width, which will be used as initial shift of later columns:
-	      var columnWidths = [];
-	      var columnXOffsets = [];
-	      for (var _i4 = 0; _i4 <= totalColumns; _i4++) {
-	        columnWidths[_i4] = 0;
-	        columnXOffsets[_i4] = 0;
-	      }
-	
-	      columnWidths[0] = accShift + leftShift;
-	      columnXOffsets[0] = accShift + leftShift;
-	
-	      // Fill columnWidths with widest needed x-space;
-	      // this is what keeps the columns parallel.
-	      lineList.forEach(function (line) {
-	        if (line.width > columnWidths[line.column]) columnWidths[line.column] = line.width;
-	      });
-	
-	      for (var _i5 = 1; _i5 < columnWidths.length; _i5++) {
-	        // this column's offset = this column's width + previous column's offset
-	        columnXOffsets[_i5] = columnWidths[_i5] + columnXOffsets[_i5 - 1];
-	      }
-	
-	      var totalShift = columnXOffsets[columnXOffsets.length - 1];
-	      // Set the xShift for each accidental according to column offsets:
-	      var accCount = 0;
-	      lineList.forEach(function (line) {
-	        var lineWidth = 0;
-	        var lastAccOnLine = accCount + line.numAcc;
-	        // handle all of the accidentals on a given line:
-	        for (accCount; accCount < lastAccOnLine; accCount++) {
-	          var xShift = columnXOffsets[line.column - 1] + lineWidth;
-	          accList[accCount].acc.setXShift(xShift);
-	          // keep track of the width of accidentals we've added so far, so that when
-	          // we loop, we add space for them.
-	          lineWidth += accList[accCount].acc.getWidth() + accidentalSpacing;
-	          L('Line, accCount, shift: ', line.line, accCount, xShift);
+	            // Accidentals attached to grace notes are rendered smaller.
+	            if (this.note.getCategory() === 'gracenotes') {
+	                this.render_options.font_scale = 25;
+	                this.reset();
+	            }
 	        }
-	      });
 	
-	      // update the overall layout with the full width of the accidental shapes:
-	      state.left_shift += totalShift;
-	    }
+	        // If called, draws parenthesis around accidental.
 	
-	    // Helper function to determine whether two lines of accidentals collide vertically
+	    }, {
+	        key: 'setAsCautionary',
+	        value: function setAsCautionary() {
+	            this.cautionary = true;
+	            this.render_options.font_scale = 28;
+	            this.reset();
+	            return this;
+	        }
 	
-	  }, {
-	    key: 'checkCollision',
-	    value: function checkCollision(line1, line2) {
-	      var clearance = line2.line - line1.line;
-	      var clearanceRequired = 3;
-	      // But less clearance is required for certain accidentals: b, bb and ##.
-	      if (clearance > 0) {
-	        // then line 2 is on top
-	        clearanceRequired = line2.flatLine || line2.dblSharpLine ? 2.5 : 3.0;
-	        if (line1.dblSharpLine) clearance -= 0.5;
-	      } else {
-	        // line 1 is on top
-	        clearanceRequired = line1.flatLine || line1.dblSharpLine ? 2.5 : 3.0;
-	        if (line2.dblSharpLine) clearance -= 0.5;
-	      }
-	      var collision = Math.abs(clearance) < clearanceRequired;
-	      L('Line_1, Line_2, Collision: ', line1.line, line2.line, collision);
-	      return collision;
-	    }
+	        // Render accidental onto canvas.
 	
-	    // Use this method to automatically apply accidentals to a set of `voices`.
-	    // The accidentals will be remembered between all the voices provided.
-	    // Optionally, you can also provide an initial `keySignature`.
+	    }, {
+	        key: 'draw',
+	        value: function draw() {
+	            var context = this.context,
+	                type = this.type,
+	                position = this.position,
+	                note = this.note,
+	                index = this.index,
+	                cautionary = this.cautionary,
+	                x_shift = this.x_shift,
+	                y_shift = this.y_shift,
+	                glyph = this.glyph,
+	                parenLeft = this.parenLeft,
+	                parenRight = this.parenRight,
+	                _render_options = this.render_options,
+	                parenLeftPadding = _render_options.parenLeftPadding,
+	                parenRightPadding = _render_options.parenRightPadding;
 	
-	  }, {
-	    key: 'applyAccidentals',
-	    value: function applyAccidentals(voices, keySignature) {
-	      var tickPositions = [];
-	      var tickNoteMap = {};
 	
-	      // Sort the tickables in each voice by their tick position in the voice
-	      voices.forEach(function (voice) {
-	        var tickPosition = new _fraction.Fraction(0, 1);
-	        var notes = voice.getTickables();
-	        notes.forEach(function (note) {
-	          if (note.shouldIgnoreTicks()) return;
+	            this.checkContext();
 	
-	          var notesAtPosition = tickNoteMap[tickPosition.value()];
-	
-	          if (!notesAtPosition) {
-	            tickPositions.push(tickPosition.value());
-	            tickNoteMap[tickPosition.value()] = [note];
-	          } else {
-	            notesAtPosition.push(note);
-	          }
-	
-	          tickPosition.add(note.getTicks());
-	        });
-	      });
-	
-	      var music = new _music.Music();
-	
-	      // Default key signature is C major
-	      if (!keySignature) keySignature = 'C';
-	
-	      // Get the scale map, which represents the current state of each pitch
-	      var scaleMap = music.createScaleMap(keySignature);
-	
-	      tickPositions.forEach(function (tick) {
-	        var notes = tickNoteMap[tick];
-	
-	        // Array to store all pitches that modified accidental states
-	        // at this tick position
-	        var modifiedPitches = [];
-	
-	        var processNote = function processNote(note) {
-	          if (note.isRest() || note.shouldIgnoreTicks()) return;
-	
-	          // Go through each key and determine if an accidental should be
-	          // applied
-	          note.keys.forEach(function (keyString, keyIndex) {
-	            var key = music.getNoteParts(keyString.split('/')[0]);
-	
-	            // Force a natural for every key without an accidental
-	            var accidentalString = key.accidental || 'n';
-	            var pitch = key.root + accidentalString;
-	
-	            // Determine if the current pitch has the same accidental
-	            // as the scale state
-	            var sameAccidental = scaleMap[key.root] === pitch;
-	
-	            // Determine if an identical pitch in the chord already
-	            // modified the accidental state
-	            var previouslyModified = modifiedPitches.indexOf(pitch) > -1;
-	
-	            // Add the accidental to the StaveNote
-	            if (!sameAccidental || sameAccidental && previouslyModified) {
-	              // Modify the scale map so that the root pitch has an
-	              // updated state
-	              scaleMap[key.root] = pitch;
-	
-	              // Create the accidental
-	              var accidental = new Accidental(accidentalString);
-	
-	              // Attach the accidental to the StaveNote
-	              note.addAccidental(keyIndex, accidental);
-	
-	              // Add the pitch to list of pitches that modified accidentals
-	              modifiedPitches.push(pitch);
+	            if (!(note && index != null)) {
+	                throw new _vex.Vex.RERR('NoAttachedNote', "Can't draw accidental without a note and index.");
 	            }
-	          });
 	
-	          // process grace notes
-	          note.getModifiers().forEach(function (modifier) {
-	            if (modifier.getCategory() === 'gracenotegroups') {
-	              modifier.getGraceNotes().forEach(processNote);
+	            // Figure out the start `x` and `y` coordinates for note and index.
+	            var start = note.getModifierStartXY(position, index);
+	            var accX = start.x + x_shift;
+	            var accY = start.y + y_shift;
+	            L('Rendering: ', type, accX, accY);
+	
+	            if (!cautionary) {
+	                glyph.render(context, accX, accY);
+	            } else {
+	                // Render the accidental in parentheses.
+	                parenRight.render(context, accX, accY);
+	                accX -= getGlyphWidth(parenRight);
+	                accX -= parenRightPadding;
+	                accX -= this.accidental.parenRightPaddingAdjustment;
+	                glyph.render(context, accX, accY);
+	                accX -= getGlyphWidth(glyph);
+	                accX -= parenLeftPadding;
+	                parenLeft.render(context, accX, accY);
 	            }
-	          });
-	        };
 	
-	        notes.forEach(processNote);
-	      });
-	    }
-	
-	    // Create accidental. `type` can be a value from the
-	    // `Vex.Flow.accidentalCodes.accidentals` table in `tables.js`. For
-	    // example: `#`, `##`, `b`, `n`, etc.
-	
-	  }, {
-	    key: 'CATEGORY',
-	    get: function get() {
-	      return 'accidentals';
-	    }
-	  }]);
-	
-	  function Accidental() {
-	    var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-	
-	    _classCallCheck(this, Accidental);
-	
-	    var _this = _possibleConstructorReturn(this, (Accidental.__proto__ || Object.getPrototypeOf(Accidental)).call(this));
-	
-	    _this.setAttribute('type', 'Accidental');
-	
-	    L('New accidental: ', type);
-	
-	    _this.note = null;
-	    // The `index` points to a specific note in a chord.
-	    _this.index = null;
-	    _this.type = type;
-	    _this.position = _modifier.Modifier.Position.LEFT;
-	
-	    _this.render_options = {
-	      // Font size for glyphs
-	      font_scale: 38,
-	
-	      // Length of stroke across heads above or below the stave.
-	      stroke_px: 3,
-	
-	      // Padding between accidental and parentheses on each side
-	      parenLeftPadding: 2,
-	      parenRightPadding: 2
-	    };
-	
-	    _this.accidental = _tables.Flow.accidentalCodes(_this.type);
-	    if (!_this.accidental) {
-	      throw new _vex.Vex.RERR('ArgumentError', 'Unknown accidental type: ' + type);
-	    }
-	
-	    // Cautionary accidentals have parentheses around them
-	    _this.cautionary = false;
-	    _this.parenLeft = null;
-	    _this.parenRight = null;
-	
-	    _this.reset();
-	    return _this;
-	  }
-	
-	  _createClass(Accidental, [{
-	    key: 'reset',
-	    value: function reset() {
-	      var fontScale = this.render_options.font_scale;
-	      this.glyph = new _glyph.Glyph(this.accidental.code, fontScale);
-	      this.glyph.setOriginX(1.0);
-	
-	      if (this.cautionary) {
-	        this.parenLeft = new _glyph.Glyph(_tables.Flow.accidentalCodes('{').code, fontScale);
-	        this.parenRight = new _glyph.Glyph(_tables.Flow.accidentalCodes('}').code, fontScale);
-	        this.parenLeft.setOriginX(1.0);
-	        this.parenRight.setOriginX(1.0);
-	      }
-	    }
-	  }, {
-	    key: 'getCategory',
-	    value: function getCategory() {
-	      return Accidental.CATEGORY;
-	    }
-	  }, {
-	    key: 'getWidth',
-	    value: function getWidth() {
-	      var parenWidth = this.cautionary ? getGlyphWidth(this.parenLeft) + getGlyphWidth(this.parenRight) + this.render_options.parenLeftPadding + this.render_options.parenRightPadding : 0;
-	
-	      return getGlyphWidth(this.glyph) + parenWidth;
-	    }
-	
-	    // Attach this accidental to `note`, which must be a `StaveNote`.
-	
-	  }, {
-	    key: 'setNote',
-	    value: function setNote(note) {
-	      if (!note) {
-	        throw new _vex.Vex.RERR('ArgumentError', 'Bad note value: ' + note);
-	      }
-	
-	      this.note = note;
-	
-	      // Accidentals attached to grace notes are rendered smaller.
-	      if (this.note.getCategory() === 'gracenotes') {
-	        this.render_options.font_scale = 25;
-	        this.reset();
-	      }
-	    }
-	
-	    // If called, draws parenthesis around accidental.
-	
-	  }, {
-	    key: 'setAsCautionary',
-	    value: function setAsCautionary() {
-	      this.cautionary = true;
-	      this.render_options.font_scale = 28;
-	      this.reset();
-	      return this;
-	    }
-	
-	    // Render accidental onto canvas.
-	
-	  }, {
-	    key: 'draw',
-	    value: function draw() {
-	      var context = this.context,
-	          type = this.type,
-	          position = this.position,
-	          note = this.note,
-	          index = this.index,
-	          cautionary = this.cautionary,
-	          x_shift = this.x_shift,
-	          y_shift = this.y_shift,
-	          glyph = this.glyph,
-	          parenLeft = this.parenLeft,
-	          parenRight = this.parenRight,
-	          _render_options = this.render_options,
-	          parenLeftPadding = _render_options.parenLeftPadding,
-	          parenRightPadding = _render_options.parenRightPadding;
-	
-	
-	      this.checkContext();
-	
-	      if (!(note && index != null)) {
-	        throw new _vex.Vex.RERR('NoAttachedNote', "Can't draw accidental without a note and index.");
-	      }
-	
-	      // Figure out the start `x` and `y` coordinates for note and index.
-	      var start = note.getModifierStartXY(position, index);
-	      var accX = start.x + x_shift;
-	      var accY = start.y + y_shift;
-	      L('Rendering: ', type, accX, accY);
-	
-	      if (!cautionary) {
-	        glyph.render(context, accX, accY);
-	      } else {
-	        // Render the accidental in parentheses.
-	        parenRight.render(context, accX, accY);
-	        accX -= getGlyphWidth(parenRight);
-	        accX -= parenRightPadding;
-	        accX -= this.accidental.parenRightPaddingAdjustment;
-	        glyph.render(context, accX, accY);
-	        accX -= getGlyphWidth(glyph);
-	        accX -= parenLeftPadding;
-	        parenLeft.render(context, accX, accY);
-	      }
-	
-	      this.setRendered();
-	    }
-	  }]);
+	            this.setRendered();
+	        }
+	    }]);
 
-	  return Accidental;
+	    return Accidental;
 	}(_modifier.Modifier);
 
 /***/ }),
@@ -15566,7 +15616,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	exports.Stave = undefined;
 	
@@ -15607,912 +15657,926 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // [VexFlow](http://vexflow.com) - Copyright (c) Mohit Muthanna 2010.
 	
 	var Stave = exports.Stave = function (_Element) {
-	  _inherits(Stave, _Element);
+	    _inherits(Stave, _Element);
 	
-	  function Stave(x, y, width, options) {
-	    _classCallCheck(this, Stave);
+	    function Stave(x, y, width, options) {
+	        _classCallCheck(this, Stave);
 	
-	    var _this = _possibleConstructorReturn(this, (Stave.__proto__ || Object.getPrototypeOf(Stave)).call(this));
+	        var _this = _possibleConstructorReturn(this, (Stave.__proto__ || Object.getPrototypeOf(Stave)).call(this));
 	
-	    _this.setAttribute('type', 'Stave');
+	        _this.setAttribute('type', 'Stave');
 	
-	    _this.x = x;
-	    _this.y = y;
-	    _this.width = width;
-	    _this.formatted = false;
-	    _this.start_x = x + 5;
-	    _this.end_x = x + width;
-	    _this.modifiers = []; // stave modifiers (clef, key, time, barlines, coda, segno, etc.)
-	    _this.measure = 0;
-	    _this.clef = 'treble';
-	    _this.font = {
-	      family: 'sans-serif',
-	      size: 8,
-	      weight: ''
-	    };
-	    _this.options = {
-	      vertical_bar_width: 10, // Width around vertical bar end-marker
-	      glyph_spacing_px: 10,
-	      num_lines: 5,
-	      fill_style: '#999999',
-	      left_bar: true, // draw vertical bar on left
-	      right_bar: true, // draw vertical bar on right
-	      spacing_between_lines_px: 10, // in pixels
-	      space_above_staff_ln: 4, // in staff lines
-	      space_below_staff_ln: 4, // in staff lines
-	      top_text_position: 1 };
-	    _this.tickables = [];
-	    _this.beams = [];
-	    _this.bounds = { x: _this.x, y: _this.y, w: _this.width, h: 0 };
-	    _vex.Vex.Merge(_this.options, options);
+	        _this.x = x;
+	        _this.y = y;
+	        _this.width = width;
+	        _this.formatted = false;
+	        _this.start_x = x + 5;
+	        _this.end_x = x + width;
+	        _this.modifiers = []; // stave modifiers (clef, key, time, barlines, coda, segno, etc.)
+	        _this.measure = 0;
+	        _this.clef = 'treble';
+	        _this.font = {
+	            family: 'sans-serif',
+	            size: 8,
+	            weight: ''
+	        };
+	        _this.options = {
+	            vertical_bar_width: 10, // Width around vertical bar end-marker
+	            glyph_spacing_px: 10,
+	            num_lines: 5,
+	            fill_style: '#999999',
+	            left_bar: true, // draw vertical bar on left
+	            right_bar: true, // draw vertical bar on right
+	            spacing_between_lines_px: 10, // in pixels
+	            space_above_staff_ln: 4, // in staff lines
+	            space_below_staff_ln: 4, // in staff lines
+	            top_text_position: 1 };
+	        _this.tickables = [];
+	        _this.activeKey = {
+	            activeTickable: null,
+	            activeKeyIndex: null
+	        };
+	        _this.beams = [];
+	        _this.bounds = { x: _this.x, y: _this.y, w: _this.width, h: 0 };
+	        _vex.Vex.Merge(_this.options, options);
 	
-	    _this.resetLines();
+	        _this.resetLines();
 	
-	    var BARTYPE = _stavebarline.Barline.type;
-	    // beg bar
-	    _this.addModifier(new _stavebarline.Barline(_this.options.left_bar ? BARTYPE.SINGLE : BARTYPE.NONE));
-	    // end bar
-	    _this.addEndModifier(new _stavebarline.Barline(_this.options.right_bar ? BARTYPE.SINGLE : BARTYPE.NONE));
-	    return _this;
-	  }
+	        var BARTYPE = _stavebarline.Barline.type;
+	        // beg bar
+	        _this.addModifier(new _stavebarline.Barline(_this.options.left_bar ? BARTYPE.SINGLE : BARTYPE.NONE));
+	        // end bar
+	        _this.addEndModifier(new _stavebarline.Barline(_this.options.right_bar ? BARTYPE.SINGLE : BARTYPE.NONE));
+	        return _this;
+	    }
 	
-	  _createClass(Stave, [{
-	    key: 'space',
-	    value: function space(spacing) {
-	      return this.options.spacing_between_lines_px * spacing;
-	    }
-	  }, {
-	    key: 'resetLines',
-	    value: function resetLines() {
-	      this.options.line_config = [];
-	      for (var i = 0; i < this.options.num_lines; i++) {
-	        this.options.line_config.push({ visible: true });
-	      }
-	      this.height = (this.options.num_lines + this.options.space_above_staff_ln) * this.options.spacing_between_lines_px;
-	      this.options.bottom_text_position = this.options.num_lines;
-	    }
-	  }, {
-	    key: 'getOptions',
-	    value: function getOptions() {
-	      return this.options;
-	    }
-	  }, {
-	    key: 'setNoteStartX',
-	    value: function setNoteStartX(x) {
-	      if (!this.formatted) this.format();
-	
-	      this.start_x = x;
-	      return this;
-	    }
-	  }, {
-	    key: 'getNoteStartX',
-	    value: function getNoteStartX() {
-	      if (!this.formatted) this.format();
-	
-	      return this.start_x;
-	    }
-	  }, {
-	    key: 'getNoteEndX',
-	    value: function getNoteEndX() {
-	      if (!this.formatted) this.format();
-	
-	      return this.end_x;
-	    }
-	  }, {
-	    key: 'getTieStartX',
-	    value: function getTieStartX() {
-	      return this.start_x;
-	    }
-	  }, {
-	    key: 'getTieEndX',
-	    value: function getTieEndX() {
-	      return this.x + this.width;
-	    }
-	  }, {
-	    key: 'getX',
-	    value: function getX() {
-	      return this.x;
-	    }
-	  }, {
-	    key: 'getNumLines',
-	    value: function getNumLines() {
-	      return this.options.num_lines;
-	    }
-	  }, {
-	    key: 'setNumLines',
-	    value: function setNumLines(lines) {
-	      this.options.num_lines = parseInt(lines, 10);
-	      this.resetLines();
-	      return this;
-	    }
-	  }, {
-	    key: 'setY',
-	    value: function setY(y) {
-	      this.y = y;return this;
-	    }
-	  }, {
-	    key: 'getTopLineTopY',
-	    value: function getTopLineTopY() {
-	      return this.getYForLine(0) - _tables.Flow.STAVE_LINE_THICKNESS / 2;
-	    }
-	  }, {
-	    key: 'getBottomLineBottomY',
-	    value: function getBottomLineBottomY() {
-	      return this.getYForLine(this.getNumLines() - 1) + _tables.Flow.STAVE_LINE_THICKNESS / 2;
-	    }
-	  }, {
-	    key: 'setX',
-	    value: function setX(x) {
-	      var shift = x - this.x;
-	      this.formatted = false;
-	      this.x = x;
-	      this.start_x += shift;
-	      this.end_x += shift;
-	      for (var i = 0; i < this.modifiers.length; i++) {
-	        var mod = this.modifiers[i];
-	        if (mod.x !== undefined) {
-	          mod.x += shift;
+	    _createClass(Stave, [{
+	        key: 'space',
+	        value: function space(spacing) {
+	            return this.options.spacing_between_lines_px * spacing;
 	        }
-	      }
-	      return this;
-	    }
-	  }, {
-	    key: 'setWidth',
-	    value: function setWidth(width) {
-	      this.formatted = false;
-	      this.width = width;
-	      this.end_x = this.x + width;
-	
-	      // reset the x position of the end barline (TODO(0xfe): This makes no sense)
-	      // this.modifiers[1].setX(this.end_x);
-	      return this;
-	    }
-	  }, {
-	    key: 'getWidth',
-	    value: function getWidth() {
-	      return this.width;
-	    }
-	  }, {
-	    key: 'setMeasure',
-	    value: function setMeasure(measure) {
-	      this.measure = measure;return this;
-	    }
-	
-	    /**
-	     * Gets the pixels to shift from the beginning of the stave
-	     * following the modifier at the provided index
-	     * @param  {Number} index The index from which to determine the shift
-	     * @return {Number}       The amount of pixels shifted
-	     */
-	
-	  }, {
-	    key: 'getModifierXShift',
-	    value: function getModifierXShift() {
-	      var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-	
-	      if (typeof index !== 'number') {
-	        throw new _vex.Vex.RERR('InvalidIndex', 'Must be of number type');
-	      }
-	
-	      if (!this.formatted) this.format();
-	
-	      if (this.getModifiers(_stavemodifier.StaveModifier.Position.BEGIN).length === 1) {
-	        return 0;
-	      }
-	
-	      var start_x = this.start_x - this.x;
-	      var begBarline = this.modifiers[0];
-	      if (begBarline.getType() === _stavebarline.Barline.type.REPEAT_BEGIN && start_x > begBarline.getWidth()) {
-	        start_x -= begBarline.getWidth();
-	      }
-	
-	      return start_x;
-	    }
-	
-	    // Coda & Segno Symbol functions
-	
-	  }, {
-	    key: 'setRepetitionTypeLeft',
-	    value: function setRepetitionTypeLeft(type, y) {
-	      this.modifiers.push(new _staverepetition.Repetition(type, this.x, y));
-	      return this;
-	    }
-	  }, {
-	    key: 'setRepetitionTypeRight',
-	    value: function setRepetitionTypeRight(type, y) {
-	      this.modifiers.push(new _staverepetition.Repetition(type, this.x, y));
-	      return this;
-	    }
-	
-	    // Volta functions
-	
-	  }, {
-	    key: 'setVoltaType',
-	    value: function setVoltaType(type, number_t, y) {
-	      this.modifiers.push(new _stavevolta.Volta(type, number_t, this.x, y));
-	      return this;
-	    }
-	
-	    // Section functions
-	
-	  }, {
-	    key: 'setSection',
-	    value: function setSection(section, y) {
-	      this.modifiers.push(new _stavesection.StaveSection(section, this.x, y));
-	      return this;
-	    }
-	
-	    // Tempo functions
-	
-	  }, {
-	    key: 'setTempo',
-	    value: function setTempo(tempo, y) {
-	      this.modifiers.push(new _stavetempo.StaveTempo(tempo, this.x, y));
-	      return this;
-	    }
-	
-	    // Text functions
-	
-	  }, {
-	    key: 'setText',
-	    value: function setText(text, position, options) {
-	      this.modifiers.push(new _stavetext.StaveText(text, position, options));
-	      return this;
-	    }
-	  }, {
-	    key: 'getHeight',
-	    value: function getHeight() {
-	      return this.height;
-	    }
-	  }, {
-	    key: 'getSpacingBetweenLines',
-	    value: function getSpacingBetweenLines() {
-	      return this.options.spacing_between_lines_px;
-	    }
-	  }, {
-	    key: 'getBoundingBox',
-	    value: function getBoundingBox() {
-	      return new _boundingbox.BoundingBox(this.x, this.y, this.width, this.getBottomY() - this.y);
-	    }
-	  }, {
-	    key: 'getBottomY',
-	    value: function getBottomY() {
-	      var options = this.options;
-	      var spacing = options.spacing_between_lines_px;
-	      var score_bottom = this.getYForLine(options.num_lines) + options.space_below_staff_ln * spacing;
-	
-	      return score_bottom;
-	    }
-	  }, {
-	    key: 'getBottomLineY',
-	    value: function getBottomLineY() {
-	      return this.getYForLine(this.options.num_lines);
-	    }
-	
-	    // This returns the y for the *center* of a staff line
-	
-	  }, {
-	    key: 'getYForLine',
-	    value: function getYForLine(line) {
-	      var options = this.options;
-	      var spacing = options.spacing_between_lines_px;
-	      var headroom = options.space_above_staff_ln;
-	
-	      var y = this.y + line * spacing + headroom * spacing;
-	
-	      return y;
-	    }
-	  }, {
-	    key: 'getLineForY',
-	    value: function getLineForY(y) {
-	      // Does the reverse of getYForLine - somewhat dumb and just calls
-	      // getYForLine until the right value is reaches
-	
-	      var options = this.options;
-	      var spacing = options.spacing_between_lines_px;
-	      var headroom = options.space_above_staff_ln;
-	      return (y - this.y) / spacing - headroom;
-	    }
-	  }, {
-	    key: 'getYForTopText',
-	    value: function getYForTopText(line) {
-	      var l = line || 0;
-	      return this.getYForLine(-l - this.options.top_text_position);
-	    }
-	  }, {
-	    key: 'getYForBottomText',
-	    value: function getYForBottomText(line) {
-	      var l = line || 0;
-	      return this.getYForLine(this.options.bottom_text_position + l);
-	    }
-	  }, {
-	    key: 'getYForNote',
-	    value: function getYForNote(line) {
-	      var options = this.options;
-	      var spacing = options.spacing_between_lines_px;
-	      var headroom = options.space_above_staff_ln;
-	      var y = this.y + headroom * spacing + 5 * spacing - line * spacing;
-	
-	      return y;
-	    }
-	  }, {
-	    key: 'getYForGlyphs',
-	    value: function getYForGlyphs() {
-	      return this.getYForLine(3);
-	    }
-	  }, {
-	    key: 'addModifier',
-	    value: function addModifier(modifier, position) {
-	      if (position !== undefined) {
-	        modifier.setPosition(position);
-	      }
-	
-	      modifier.setStave(this);
-	      this.formatted = false;
-	      this.modifiers.push(modifier);
-	      return this;
-	    }
-	  }, {
-	    key: 'addEndModifier',
-	    value: function addEndModifier(modifier) {
-	      this.addModifier(modifier, _stavemodifier.StaveModifier.Position.END);
-	      return this;
-	    }
-	
-	    // Bar Line functions
-	
-	  }, {
-	    key: 'setBegBarType',
-	    value: function setBegBarType(type) {
-	      // Only valid bar types at beginning of stave is none, single or begin repeat
-	      var _Barline$type = _stavebarline.Barline.type,
-	          SINGLE = _Barline$type.SINGLE,
-	          REPEAT_BEGIN = _Barline$type.REPEAT_BEGIN,
-	          NONE = _Barline$type.NONE;
-	
-	      if (type === SINGLE || type === REPEAT_BEGIN || type === NONE) {
-	        this.modifiers[0].setType(type);
-	        this.formatted = false;
-	      }
-	      return this;
-	    }
-	  }, {
-	    key: 'setEndBarType',
-	    value: function setEndBarType(type) {
-	      // Repeat end not valid at end of stave
-	      if (type !== _stavebarline.Barline.type.REPEAT_BEGIN) {
-	        this.modifiers[1].setType(type);
-	        this.formatted = false;
-	      }
-	      return this;
-	    }
-	  }, {
-	    key: 'setClef',
-	    value: function setClef(clefSpec, size, annotation, position) {
-	      if (position === undefined) {
-	        position = _stavemodifier.StaveModifier.Position.BEGIN;
-	      }
-	
-	      this.clef = clefSpec;
-	      var clefs = this.getModifiers(position, _clef.Clef.CATEGORY);
-	      if (clefs.length === 0) {
-	        this.addClef(clefSpec, size, annotation, position);
-	      } else {
-	        clefs[0].setType(clefSpec, size, annotation);
-	      }
-	
-	      return this;
-	    }
-	  }, {
-	    key: 'setEndClef',
-	    value: function setEndClef(clefSpec, size, annotation) {
-	      this.setClef(clefSpec, size, annotation, _stavemodifier.StaveModifier.Position.END);
-	      return this;
-	    }
-	  }, {
-	    key: 'setKeySignature',
-	    value: function setKeySignature(keySpec, cancelKeySpec, position) {
-	      if (position === undefined) {
-	        position = _stavemodifier.StaveModifier.Position.BEGIN;
-	      }
-	
-	      var keySignatures = this.getModifiers(position, _keysignature.KeySignature.CATEGORY);
-	      if (keySignatures.length === 0) {
-	        this.addKeySignature(keySpec, cancelKeySpec, position);
-	      } else {
-	        keySignatures[0].setKeySig(keySpec, cancelKeySpec);
-	      }
-	
-	      return this;
-	    }
-	  }, {
-	    key: 'setEndKeySignature',
-	    value: function setEndKeySignature(keySpec, cancelKeySpec) {
-	      this.setKeySignature(keySpec, cancelKeySpec, _stavemodifier.StaveModifier.Position.END);
-	      return this;
-	    }
-	  }, {
-	    key: 'setTimeSignature',
-	    value: function setTimeSignature(timeSpec, customPadding, position) {
-	      if (position === undefined) {
-	        position = _stavemodifier.StaveModifier.Position.BEGIN;
-	      }
-	
-	      var timeSignatures = this.getModifiers(position, _timesignature.TimeSignature.CATEGORY);
-	      if (timeSignatures.length === 0) {
-	        this.addTimeSignature(timeSpec, customPadding, position);
-	      } else {
-	        timeSignatures[0].setTimeSig(timeSpec);
-	      }
-	
-	      return this;
-	    }
-	  }, {
-	    key: 'setEndTimeSignature',
-	    value: function setEndTimeSignature(timeSpec, customPadding) {
-	      this.setTimeSignature(timeSpec, customPadding, _stavemodifier.StaveModifier.Position.END);
-	      return this;
-	    }
-	  }, {
-	    key: 'addKeySignature',
-	    value: function addKeySignature(keySpec, cancelKeySpec, position) {
-	      this.addModifier(new _keysignature.KeySignature(keySpec, cancelKeySpec), position);
-	      return this;
-	    }
-	  }, {
-	    key: 'addClef',
-	    value: function addClef(clef, size, annotation, position) {
-	      if (position === undefined || position === _stavemodifier.StaveModifier.Position.BEGIN) {
-	        this.clef = clef;
-	      }
-	
-	      this.addModifier(new _clef.Clef(clef, size, annotation), position);
-	      return this;
-	    }
-	  }, {
-	    key: 'addEndClef',
-	    value: function addEndClef(clef, size, annotation) {
-	      this.addClef(clef, size, annotation, _stavemodifier.StaveModifier.Position.END);
-	      return this;
-	    }
-	  }, {
-	    key: 'addTimeSignature',
-	    value: function addTimeSignature(timeSpec, customPadding, position) {
-	      this.addModifier(new _timesignature.TimeSignature(timeSpec, customPadding), position);
-	      return this;
-	    }
-	  }, {
-	    key: 'addEndTimeSignature',
-	    value: function addEndTimeSignature(timeSpec, customPadding) {
-	      this.addTimeSignature(timeSpec, customPadding, _stavemodifier.StaveModifier.Position.END);
-	      return this;
-	    }
-	
-	    // Deprecated
-	
-	  }, {
-	    key: 'addTrebleGlyph',
-	    value: function addTrebleGlyph() {
-	      this.addClef('treble');
-	      return this;
-	    }
-	  }, {
-	    key: 'getModifiers',
-	    value: function getModifiers(position, category) {
-	      if (position === undefined) return this.modifiers;
-	
-	      return this.modifiers.filter(function (modifier) {
-	        return position === modifier.getPosition() && (category === undefined || category === modifier.getCategory());
-	      });
-	    }
-	  }, {
-	    key: 'sortByCategory',
-	    value: function sortByCategory(items, order) {
-	      for (var i = items.length - 1; i >= 0; i--) {
-	        for (var j = 0; j < i; j++) {
-	          if (order[items[j].getCategory()] > order[items[j + 1].getCategory()]) {
-	            var temp = items[j];
-	            items[j] = items[j + 1];
-	            items[j + 1] = temp;
-	          }
+	    }, {
+	        key: 'resetLines',
+	        value: function resetLines() {
+	            this.options.line_config = [];
+	            for (var i = 0; i < this.options.num_lines; i++) {
+	                this.options.line_config.push({ visible: true });
+	            }
+	            this.height = (this.options.num_lines + this.options.space_above_staff_ln) * this.options.spacing_between_lines_px;
+	            this.options.bottom_text_position = this.options.num_lines;
 	        }
-	      }
-	    }
-	  }, {
-	    key: 'format',
-	    value: function format() {
-	      var begBarline = this.modifiers[0];
-	      var endBarline = this.modifiers[1];
+	    }, {
+	        key: 'getOptions',
+	        value: function getOptions() {
+	            return this.options;
+	        }
+	    }, {
+	        key: 'setNoteStartX',
+	        value: function setNoteStartX(x) {
+	            if (!this.formatted) this.format();
 	
-	      var begModifiers = this.getModifiers(_stavemodifier.StaveModifier.Position.BEGIN);
-	      var endModifiers = this.getModifiers(_stavemodifier.StaveModifier.Position.END);
+	            this.start_x = x;
+	            return this;
+	        }
+	    }, {
+	        key: 'getNoteStartX',
+	        value: function getNoteStartX() {
+	            if (!this.formatted) this.format();
 	
-	      this.sortByCategory(begModifiers, {
-	        barlines: 0, clefs: 1, keysignatures: 2, timesignatures: 3
-	      });
+	            return this.start_x;
+	        }
+	    }, {
+	        key: 'getNoteEndX',
+	        value: function getNoteEndX() {
+	            if (!this.formatted) this.format();
 	
-	      this.sortByCategory(endModifiers, {
-	        timesignatures: 0, keysignatures: 1, barlines: 2, clefs: 3
-	      });
+	            return this.end_x;
+	        }
+	    }, {
+	        key: 'getTieStartX',
+	        value: function getTieStartX() {
+	            return this.start_x;
+	        }
+	    }, {
+	        key: 'getTieEndX',
+	        value: function getTieEndX() {
+	            return this.x + this.width;
+	        }
+	    }, {
+	        key: 'getX',
+	        value: function getX() {
+	            return this.x;
+	        }
+	    }, {
+	        key: 'getNumLines',
+	        value: function getNumLines() {
+	            return this.options.num_lines;
+	        }
+	    }, {
+	        key: 'setNumLines',
+	        value: function setNumLines(lines) {
+	            this.options.num_lines = parseInt(lines, 10);
+	            this.resetLines();
+	            return this;
+	        }
+	    }, {
+	        key: 'setY',
+	        value: function setY(y) {
+	            this.y = y;return this;
+	        }
+	    }, {
+	        key: 'getTopLineTopY',
+	        value: function getTopLineTopY() {
+	            return this.getYForLine(0) - _tables.Flow.STAVE_LINE_THICKNESS / 2;
+	        }
+	    }, {
+	        key: 'getBottomLineBottomY',
+	        value: function getBottomLineBottomY() {
+	            return this.getYForLine(this.getNumLines() - 1) + _tables.Flow.STAVE_LINE_THICKNESS / 2;
+	        }
+	    }, {
+	        key: 'setX',
+	        value: function setX(x) {
+	            var shift = x - this.x;
+	            this.formatted = false;
+	            this.x = x;
+	            this.start_x += shift;
+	            this.end_x += shift;
+	            for (var i = 0; i < this.modifiers.length; i++) {
+	                var mod = this.modifiers[i];
+	                if (mod.x !== undefined) {
+	                    mod.x += shift;
+	                }
+	            }
+	            return this;
+	        }
+	    }, {
+	        key: 'setWidth',
+	        value: function setWidth(width) {
+	            this.formatted = false;
+	            this.width = width;
+	            this.end_x = this.x + width;
 	
-	      if (begModifiers.length > 1 && begBarline.getType() === _stavebarline.Barline.type.REPEAT_BEGIN) {
-	        begModifiers.push(begModifiers.splice(0, 1)[0]);
-	        begModifiers.splice(0, 0, new _stavebarline.Barline(_stavebarline.Barline.type.SINGLE));
-	      }
-	
-	      if (endModifiers.indexOf(endBarline) > 0) {
-	        endModifiers.splice(0, 0, new _stavebarline.Barline(_stavebarline.Barline.type.NONE));
-	      }
-	
-	      var width = void 0;
-	      var padding = void 0;
-	      var modifier = void 0;
-	      var offset = 0;
-	      var x = this.x;
-	      for (var i = 0; i < begModifiers.length; i++) {
-	        modifier = begModifiers[i];
-	        padding = modifier.getPadding(i + offset);
-	        width = modifier.getWidth();
-	
-	        x += padding;
-	        modifier.setX(x);
-	        x += width;
-	
-	        if (padding + width === 0) offset--;
-	      }
-	
-	      this.start_x = x;
-	      x = this.x + this.width;
-	
-	      for (var _i = 0; _i < endModifiers.length; _i++) {
-	        modifier = endModifiers[_i];
-	        x -= modifier.getPadding(_i);
-	        if (_i !== 0) {
-	          x -= modifier.getWidth();
+	            // reset the x position of the end barline (TODO(0xfe): This makes no sense)
+	            // this.modifiers[1].setX(this.end_x);
+	            return this;
+	        }
+	    }, {
+	        key: 'getWidth',
+	        value: function getWidth() {
+	            return this.width;
+	        }
+	    }, {
+	        key: 'setMeasure',
+	        value: function setMeasure(measure) {
+	            this.measure = measure;return this;
 	        }
 	
-	        modifier.setX(x);
+	        /**
+	         * Gets the pixels to shift from the beginning of the stave
+	         * following the modifier at the provided index
+	         * @param  {Number} index The index from which to determine the shift
+	         * @return {Number}       The amount of pixels shifted
+	         */
 	
-	        if (_i === 0) {
-	          x -= modifier.getWidth();
+	    }, {
+	        key: 'getModifierXShift',
+	        value: function getModifierXShift() {
+	            var index = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+	
+	            if (typeof index !== 'number') {
+	                throw new _vex.Vex.RERR('InvalidIndex', 'Must be of number type');
+	            }
+	
+	            if (!this.formatted) this.format();
+	
+	            if (this.getModifiers(_stavemodifier.StaveModifier.Position.BEGIN).length === 1) {
+	                return 0;
+	            }
+	
+	            var start_x = this.start_x - this.x;
+	            var begBarline = this.modifiers[0];
+	            if (begBarline.getType() === _stavebarline.Barline.type.REPEAT_BEGIN && start_x > begBarline.getWidth()) {
+	                start_x -= begBarline.getWidth();
+	            }
+	
+	            return start_x;
 	        }
-	      }
 	
-	      this.end_x = endModifiers.length === 1 ? this.x + this.width : x;
-	      this.formatted = true;
-	    }
+	        // Coda & Segno Symbol functions
 	
-	    /**
-	     * All drawing functions below need the context to be set.
-	     */
-	
-	  }, {
-	    key: 'draw',
-	    value: function draw() {
-	      this.checkContext();
-	      this.setRendered();
-	
-	      if (!this.formatted) this.format();
-	
-	      var num_lines = this.options.num_lines;
-	      var width = this.width;
-	      var x = this.x;
-	      var y = void 0;
-	
-	      // Render lines
-	      for (var line = 0; line < num_lines; line++) {
-	        y = this.getYForLine(line);
-	
-	        this.context.save();
-	        this.context.setFillStyle(this.options.fill_style);
-	        this.context.setStrokeStyle(this.options.fill_style);
-	        this.context.setLineWidth(_tables.Flow.STAVE_LINE_THICKNESS);
-	        if (this.options.line_config[line].visible) {
-	          this.context.beginPath();
-	          this.context.moveTo(x, y);
-	          this.context.lineTo(x + width, y);
-	          this.context.stroke();
+	    }, {
+	        key: 'setRepetitionTypeLeft',
+	        value: function setRepetitionTypeLeft(type, y) {
+	            this.modifiers.push(new _staverepetition.Repetition(type, this.x, y));
+	            return this;
 	        }
-	        this.context.restore();
-	      }
-	
-	      // Draw the modifiers (bar lines, coda, segno, repeat brackets, etc.)
-	      for (var i = 0; i < this.modifiers.length; i++) {
-	        // Only draw modifier if it has a draw function
-	        if (typeof this.modifiers[i].draw === 'function') {
-	          this.modifiers[i].draw(this, this.getModifierXShift(i));
+	    }, {
+	        key: 'setRepetitionTypeRight',
+	        value: function setRepetitionTypeRight(type, y) {
+	            this.modifiers.push(new _staverepetition.Repetition(type, this.x, y));
+	            return this;
 	        }
-	      }
 	
-	      // Render measure numbers
-	      if (this.measure > 0) {
-	        this.context.save();
-	        this.context.setFont(this.font.family, this.font.size, this.font.weight);
-	        var text_width = this.context.measureText('' + this.measure).width;
-	        y = this.getYForTopText(0) + 3;
-	        this.context.fillText('' + this.measure, this.x - text_width / 2, y);
-	        this.context.restore();
-	      }
+	        // Volta functions
 	
-	      return this;
-	    }
-	
-	    // Draw Simple barlines for backward compatability
-	    // Do not delete - draws the beginning bar of the stave
-	
-	  }, {
-	    key: 'drawVertical',
-	    value: function drawVertical(x, isDouble) {
-	      this.drawVerticalFixed(this.x + x, isDouble);
-	    }
-	  }, {
-	    key: 'drawVerticalFixed',
-	    value: function drawVerticalFixed(x, isDouble) {
-	      this.checkContext();
-	
-	      var top_line = this.getYForLine(0);
-	      var bottom_line = this.getYForLine(this.options.num_lines - 1);
-	      if (isDouble) {
-	        this.context.fillRect(x - 3, top_line, 1, bottom_line - top_line + 1);
-	      }
-	      this.context.fillRect(x, top_line, 1, bottom_line - top_line + 1);
-	    }
-	  }, {
-	    key: 'drawVerticalBar',
-	    value: function drawVerticalBar(x) {
-	      this.drawVerticalBarFixed(this.x + x, false);
-	    }
-	  }, {
-	    key: 'drawVerticalBarFixed',
-	    value: function drawVerticalBarFixed(x) {
-	      this.checkContext();
-	
-	      var top_line = this.getYForLine(0);
-	      var bottom_line = this.getYForLine(this.options.num_lines - 1);
-	      this.context.fillRect(x, top_line, 1, bottom_line - top_line + 1);
-	    }
-	
-	    /**
-	     * Get the current configuration for the Stave.
-	     * @return {Array} An array of configuration objects.
-	     */
-	
-	  }, {
-	    key: 'getConfigForLines',
-	    value: function getConfigForLines() {
-	      return this.options.line_config;
-	    }
-	
-	    /**
-	     * Configure properties of the lines in the Stave
-	     * @param line_number The index of the line to configure.
-	     * @param line_config An configuration object for the specified line.
-	     * @throws Vex.RERR "StaveConfigError" When the specified line number is out of
-	     *   range of the number of lines specified in the constructor.
-	     */
-	
-	  }, {
-	    key: 'setConfigForLine',
-	    value: function setConfigForLine(line_number, line_config) {
-	      if (line_number >= this.options.num_lines || line_number < 0) {
-	        throw new _vex.Vex.RERR('StaveConfigError', 'The line number must be within the range of the number of lines in the Stave.');
-	      }
-	
-	      if (line_config.visible === undefined) {
-	        throw new _vex.Vex.RERR('StaveConfigError', "The line configuration object is missing the 'visible' property.");
-	      }
-	
-	      if (typeof line_config.visible !== 'boolean') {
-	        throw new _vex.Vex.RERR('StaveConfigError', "The line configuration objects 'visible' property must be true or false.");
-	      }
-	
-	      this.options.line_config[line_number] = line_config;
-	
-	      return this;
-	    }
-	
-	    /**
-	     * Set the staff line configuration array for all of the lines at once.
-	     * @param lines_configuration An array of line configuration objects.  These objects
-	     *   are of the same format as the single one passed in to setLineConfiguration().
-	     *   The caller can set null for any line config entry if it is desired that the default be used
-	     * @throws Vex.RERR "StaveConfigError" When the lines_configuration array does not have
-	     *   exactly the same number of elements as the num_lines configuration object set in
-	     *   the constructor.
-	     */
-	
-	  }, {
-	    key: 'setConfigForLines',
-	    value: function setConfigForLines(lines_configuration) {
-	      if (lines_configuration.length !== this.options.num_lines) {
-	        throw new _vex.Vex.RERR('StaveConfigError', 'The length of the lines configuration array must match the number of lines in the Stave');
-	      }
-	
-	      // Make sure the defaults are present in case an incomplete set of
-	      //  configuration options were supplied.
-	      for (var line_config in lines_configuration) {
-	        // Allow 'null' to be used if the caller just wants the default for a particular node.
-	        if (!lines_configuration[line_config]) {
-	          lines_configuration[line_config] = this.options.line_config[line_config];
+	    }, {
+	        key: 'setVoltaType',
+	        value: function setVoltaType(type, number_t, y) {
+	            this.modifiers.push(new _stavevolta.Volta(type, number_t, this.x, y));
+	            return this;
 	        }
-	        _vex.Vex.Merge(this.options.line_config[line_config], lines_configuration[line_config]);
-	      }
 	
-	      this.options.line_config = lines_configuration;
+	        // Section functions
 	
-	      return this;
-	    }
-	
-	    /*
-	     * Vex.Flow.Stave extensions
-	     */
-	
-	  }, {
-	    key: 'setTickables',
-	    value: function setTickables(tickables) {
-	      this.tickables = tickables;
-	    }
-	  }, {
-	    key: 'getTickables',
-	    value: function getTickables() {
-	      return this.tickables;
-	    }
-	  }, {
-	    key: 'getNotes',
-	    value: function getNotes() {
-	      var notes = [];
-	
-	      for (var i = 0; i < this.tickables.length; i++) {
-	        var tickable = this.tickables[i];
-	        if (tickable instanceof _vex.Vex.Flow.StaveNote) {
-	          notes.push(tickable);
+	    }, {
+	        key: 'setSection',
+	        value: function setSection(section, y) {
+	            this.modifiers.push(new _stavesection.StaveSection(section, this.x, y));
+	            return this;
 	        }
-	      }
 	
-	      return notes;
-	    }
-	  }, {
-	    key: 'insertTickableBetween',
-	    value: function insertTickableBetween(newTickable, previousTickable, nextTickable) {
-	      if (newTickable instanceof _vex.Vex.Flow.ClefNote) {
-	        // If the stave has no clef modifiers, then add it.
-	        if (this.getClefModifierIndex() < 0) {
-	          this.addClef(newTickable.clefKey);
-	          // If the stave already has a clef, but the user clicked before any
-	          // other tickable, then replace the stave clef
-	          return;
-	        } else if (previousTickable == null) {
-	          this.replaceClef(newTickable.clefKey);
-	          // Else add it as a normal ClefNote as long as the stave already has
-	          // notes, so leave otherwise
-	          return;
-	        } else if (this.getNotes().length === 0) {
-	          return;
+	        // Tempo functions
+	
+	    }, {
+	        key: 'setTempo',
+	        value: function setTempo(tempo, y) {
+	            this.modifiers.push(new _stavetempo.StaveTempo(tempo, this.x, y));
+	            return this;
 	        }
-	      } else if (newTickable instanceof _vex.Vex.Flow.BarNote) {
-	        // If the BarNote is to be inserted after everything, then modify the end bar of the stave
-	        if (nextTickable == null) {
-	          this.setEndBarType(newTickable.type);
-	          // Else add it as a normal BarNote as long as the stave already has notes, so leave
-	          // otherwise
-	          return;
-	        } else if (this.getNotes().length === 0) {
-	          return;
+	
+	        // Text functions
+	
+	    }, {
+	        key: 'setText',
+	        value: function setText(text, position, options) {
+	            this.modifiers.push(new _stavetext.StaveText(text, position, options));
+	            return this;
 	        }
-	      }
-	
-	      if (nextTickable == null) {
-	        this.pushTickable(newTickable);
-	      } else {
-	        var referenceIndex = this.tickables.indexOf(nextTickable);
-	        this.tickables.splice(referenceIndex, 0, newTickable);
-	      }
-	    }
-	  }, {
-	    key: 'getClefModifierIndex',
-	    value: function getClefModifierIndex() {
-	      // Remove all clefs currently in the stave
-	      for (var i = 0; i < this.modifiers.length; i++) {
-	        var modifier = this.modifiers[i];
-	
-	        if (modifier instanceof _vex.Vex.Flow.Clef) {
-	          return i;
+	    }, {
+	        key: 'getHeight',
+	        value: function getHeight() {
+	            return this.height;
 	        }
-	      }
-	
-	      return -1;
-	    }
-	  }, {
-	    key: 'replaceClef',
-	    value: function replaceClef(clef) {
-	      var start_X = this.start_x;
-	      this.clef = clef;
-	      // const modifier = new Vex.Flow.Clef(clef);
-	      this.modifiers.splice(this.getClefModifierIndex(), 1);
-	      this.glyphs = [];
-	      this.addClef(clef);
-	
-	      this.start_x = start_X;
-	    }
-	  }, {
-	    key: 'getPreviousTickable',
-	    value: function getPreviousTickable(referenceTickable) {
-	      var referenceIndex = this.tickables.indexOf(referenceTickable);
-	      if (referenceIndex === 0) {
-	        return null;
-	      }
-	
-	      return this.tickables[referenceIndex - 1];
-	    }
-	  }, {
-	    key: 'getNextTickable',
-	    value: function getNextTickable(referenceTickable) {
-	      var referenceIndex = this.tickables.indexOf(referenceTickable);
-	      if (referenceIndex === this.tickables.length - 1) {
-	        return null;
-	      }
-	
-	      return this.tickables[referenceIndex + 1];
-	    }
-	  }, {
-	    key: 'getNextNote',
-	    value: function getNextNote(referenceNote) {
-	      var referenceIndex = this.tickables.indexOf(referenceNote);
-	      while (referenceIndex < this.tickables.length) {
-	        referenceIndex++;
-	        if (this.tickables[referenceIndex] instanceof _vex.Vex.Flow.StaveNote) {
-	          return this.tickables[referenceIndex];
+	    }, {
+	        key: 'getActiveKey',
+	        value: function getActiveKey() {
+	            return this.activeKey;
 	        }
-	      }
+	    }, {
+	        key: 'setActiveKey',
+	        value: function setActiveKey(activeKey) {
+	            this.activeKey = activeKey;
+	        }
+	    }, {
+	        key: 'getSpacingBetweenLines',
+	        value: function getSpacingBetweenLines() {
+	            return this.options.spacing_between_lines_px;
+	        }
+	    }, {
+	        key: 'getBoundingBox',
+	        value: function getBoundingBox() {
+	            return new _boundingbox.BoundingBox(this.x, this.y, this.width, this.getBottomY() - this.y);
+	        }
+	    }, {
+	        key: 'getBottomY',
+	        value: function getBottomY() {
+	            var options = this.options;
+	            var spacing = options.spacing_between_lines_px;
+	            var score_bottom = this.getYForLine(options.num_lines) + options.space_below_staff_ln * spacing;
 	
-	      return null;
-	    }
-	  }, {
-	    key: 'replaceTickable',
-	    value: function replaceTickable(oldTickable, newTickable) {
-	      // Replacing note in beam.
-	      if (oldTickable.beam != null) {
-	        var beam = oldTickable.beam;
-	        var _referenceIndex = beam.tickables.indexOf(oldTickable);
-	        beam.notes[_referenceIndex] = newTickable;
-	      }
+	            return score_bottom;
+	        }
+	    }, {
+	        key: 'getBottomLineY',
+	        value: function getBottomLineY() {
+	            return this.getYForLine(this.options.num_lines);
+	        }
 	
-	      var referenceIndex = this.tickables.indexOf(oldTickable);
-	      this.tickables[referenceIndex] = newTickable;
-	    }
-	  }, {
-	    key: 'removeTickable',
-	    value: function removeTickable(tickable) {
-	      this.tickables.splice(this.tickables.indexOf(tickable), 1);
-	    }
-	  }, {
-	    key: 'removeAllTickables',
-	    value: function removeAllTickables() {
-	      this.tickables = [];
-	    }
-	  }, {
-	    key: 'pushTickable',
-	    value: function pushTickable(newTickable) {
-	      this.tickables.push(newTickable);
-	    }
-	  }, {
-	    key: 'setBeams',
-	    value: function setBeams(beamList) {
-	      this.beams = beamList;
-	    }
-	  }, {
-	    key: 'getBeams',
-	    value: function getBeams() {
-	      return this.beams;
-	    }
-	  }, {
-	    key: 'pushBeam',
-	    value: function pushBeam(newBeam) {
-	      this.beams.push(newBeam);
-	    }
-	  }]);
+	        // This returns the y for the *center* of a staff line
+	
+	    }, {
+	        key: 'getYForLine',
+	        value: function getYForLine(line) {
+	            var options = this.options;
+	            var spacing = options.spacing_between_lines_px;
+	            var headroom = options.space_above_staff_ln;
+	
+	            var y = this.y + line * spacing + headroom * spacing;
+	
+	            return y;
+	        }
+	    }, {
+	        key: 'getLineForY',
+	        value: function getLineForY(y) {
+	            // Does the reverse of getYForLine - somewhat dumb and just calls
+	            // getYForLine until the right value is reaches
+	
+	            var options = this.options;
+	            var spacing = options.spacing_between_lines_px;
+	            var headroom = options.space_above_staff_ln;
+	            return (y - this.y) / spacing - headroom;
+	        }
+	    }, {
+	        key: 'getYForTopText',
+	        value: function getYForTopText(line) {
+	            var l = line || 0;
+	            return this.getYForLine(-l - this.options.top_text_position);
+	        }
+	    }, {
+	        key: 'getYForBottomText',
+	        value: function getYForBottomText(line) {
+	            var l = line || 0;
+	            return this.getYForLine(this.options.bottom_text_position + l);
+	        }
+	    }, {
+	        key: 'getYForNote',
+	        value: function getYForNote(line) {
+	            var options = this.options;
+	            var spacing = options.spacing_between_lines_px;
+	            var headroom = options.space_above_staff_ln;
+	            var y = this.y + headroom * spacing + 5 * spacing - line * spacing;
+	
+	            return y;
+	        }
+	    }, {
+	        key: 'getYForGlyphs',
+	        value: function getYForGlyphs() {
+	            return this.getYForLine(3);
+	        }
+	    }, {
+	        key: 'addModifier',
+	        value: function addModifier(modifier, position) {
+	            if (position !== undefined) {
+	                modifier.setPosition(position);
+	            }
+	
+	            modifier.setStave(this);
+	            this.formatted = false;
+	            this.modifiers.push(modifier);
+	            return this;
+	        }
+	    }, {
+	        key: 'addEndModifier',
+	        value: function addEndModifier(modifier) {
+	            this.addModifier(modifier, _stavemodifier.StaveModifier.Position.END);
+	            return this;
+	        }
+	
+	        // Bar Line functions
+	
+	    }, {
+	        key: 'setBegBarType',
+	        value: function setBegBarType(type) {
+	            // Only valid bar types at beginning of stave is none, single or begin repeat
+	            var _Barline$type = _stavebarline.Barline.type,
+	                SINGLE = _Barline$type.SINGLE,
+	                REPEAT_BEGIN = _Barline$type.REPEAT_BEGIN,
+	                NONE = _Barline$type.NONE;
+	
+	            if (type === SINGLE || type === REPEAT_BEGIN || type === NONE) {
+	                this.modifiers[0].setType(type);
+	                this.formatted = false;
+	            }
+	            return this;
+	        }
+	    }, {
+	        key: 'setEndBarType',
+	        value: function setEndBarType(type) {
+	            // Repeat end not valid at end of stave
+	            if (type !== _stavebarline.Barline.type.REPEAT_BEGIN) {
+	                this.modifiers[1].setType(type);
+	                this.formatted = false;
+	            }
+	            return this;
+	        }
+	    }, {
+	        key: 'setClef',
+	        value: function setClef(clefSpec, size, annotation, position) {
+	            if (position === undefined) {
+	                position = _stavemodifier.StaveModifier.Position.BEGIN;
+	            }
+	
+	            this.clef = clefSpec;
+	            var clefs = this.getModifiers(position, _clef.Clef.CATEGORY);
+	            if (clefs.length === 0) {
+	                this.addClef(clefSpec, size, annotation, position);
+	            } else {
+	                clefs[0].setType(clefSpec, size, annotation);
+	            }
+	
+	            return this;
+	        }
+	    }, {
+	        key: 'setEndClef',
+	        value: function setEndClef(clefSpec, size, annotation) {
+	            this.setClef(clefSpec, size, annotation, _stavemodifier.StaveModifier.Position.END);
+	            return this;
+	        }
+	    }, {
+	        key: 'setKeySignature',
+	        value: function setKeySignature(keySpec, cancelKeySpec, position) {
+	            if (position === undefined) {
+	                position = _stavemodifier.StaveModifier.Position.BEGIN;
+	            }
+	
+	            var keySignatures = this.getModifiers(position, _keysignature.KeySignature.CATEGORY);
+	            if (keySignatures.length === 0) {
+	                this.addKeySignature(keySpec, cancelKeySpec, position);
+	            } else {
+	                keySignatures[0].setKeySig(keySpec, cancelKeySpec);
+	            }
+	
+	            return this;
+	        }
+	    }, {
+	        key: 'setEndKeySignature',
+	        value: function setEndKeySignature(keySpec, cancelKeySpec) {
+	            this.setKeySignature(keySpec, cancelKeySpec, _stavemodifier.StaveModifier.Position.END);
+	            return this;
+	        }
+	    }, {
+	        key: 'setTimeSignature',
+	        value: function setTimeSignature(timeSpec, customPadding, position) {
+	            if (position === undefined) {
+	                position = _stavemodifier.StaveModifier.Position.BEGIN;
+	            }
+	
+	            var timeSignatures = this.getModifiers(position, _timesignature.TimeSignature.CATEGORY);
+	            if (timeSignatures.length === 0) {
+	                this.addTimeSignature(timeSpec, customPadding, position);
+	            } else {
+	                timeSignatures[0].setTimeSig(timeSpec);
+	            }
+	
+	            return this;
+	        }
+	    }, {
+	        key: 'setEndTimeSignature',
+	        value: function setEndTimeSignature(timeSpec, customPadding) {
+	            this.setTimeSignature(timeSpec, customPadding, _stavemodifier.StaveModifier.Position.END);
+	            return this;
+	        }
+	    }, {
+	        key: 'addKeySignature',
+	        value: function addKeySignature(keySpec, cancelKeySpec, position) {
+	            this.addModifier(new _keysignature.KeySignature(keySpec, cancelKeySpec), position);
+	            return this;
+	        }
+	    }, {
+	        key: 'addClef',
+	        value: function addClef(clef, size, annotation, position) {
+	            if (position === undefined || position === _stavemodifier.StaveModifier.Position.BEGIN) {
+	                this.clef = clef;
+	            }
+	
+	            this.addModifier(new _clef.Clef(clef, size, annotation), position);
+	            return this;
+	        }
+	    }, {
+	        key: 'addEndClef',
+	        value: function addEndClef(clef, size, annotation) {
+	            this.addClef(clef, size, annotation, _stavemodifier.StaveModifier.Position.END);
+	            return this;
+	        }
+	    }, {
+	        key: 'addTimeSignature',
+	        value: function addTimeSignature(timeSpec, customPadding, position) {
+	            this.addModifier(new _timesignature.TimeSignature(timeSpec, customPadding), position);
+	            return this;
+	        }
+	    }, {
+	        key: 'addEndTimeSignature',
+	        value: function addEndTimeSignature(timeSpec, customPadding) {
+	            this.addTimeSignature(timeSpec, customPadding, _stavemodifier.StaveModifier.Position.END);
+	            return this;
+	        }
+	
+	        // Deprecated
+	
+	    }, {
+	        key: 'addTrebleGlyph',
+	        value: function addTrebleGlyph() {
+	            this.addClef('treble');
+	            return this;
+	        }
+	    }, {
+	        key: 'getModifiers',
+	        value: function getModifiers(position, category) {
+	            if (position === undefined) return this.modifiers;
+	
+	            return this.modifiers.filter(function (modifier) {
+	                return position === modifier.getPosition() && (category === undefined || category === modifier.getCategory());
+	            });
+	        }
+	    }, {
+	        key: 'sortByCategory',
+	        value: function sortByCategory(items, order) {
+	            for (var i = items.length - 1; i >= 0; i--) {
+	                for (var j = 0; j < i; j++) {
+	                    if (order[items[j].getCategory()] > order[items[j + 1].getCategory()]) {
+	                        var temp = items[j];
+	                        items[j] = items[j + 1];
+	                        items[j + 1] = temp;
+	                    }
+	                }
+	            }
+	        }
+	    }, {
+	        key: 'format',
+	        value: function format() {
+	            var begBarline = this.modifiers[0];
+	            var endBarline = this.modifiers[1];
+	
+	            var begModifiers = this.getModifiers(_stavemodifier.StaveModifier.Position.BEGIN);
+	            var endModifiers = this.getModifiers(_stavemodifier.StaveModifier.Position.END);
+	
+	            this.sortByCategory(begModifiers, {
+	                barlines: 0, clefs: 1, keysignatures: 2, timesignatures: 3
+	            });
+	
+	            this.sortByCategory(endModifiers, {
+	                timesignatures: 0, keysignatures: 1, barlines: 2, clefs: 3
+	            });
+	
+	            if (begModifiers.length > 1 && begBarline.getType() === _stavebarline.Barline.type.REPEAT_BEGIN) {
+	                begModifiers.push(begModifiers.splice(0, 1)[0]);
+	                begModifiers.splice(0, 0, new _stavebarline.Barline(_stavebarline.Barline.type.SINGLE));
+	            }
+	
+	            if (endModifiers.indexOf(endBarline) > 0) {
+	                endModifiers.splice(0, 0, new _stavebarline.Barline(_stavebarline.Barline.type.NONE));
+	            }
+	
+	            var width = void 0;
+	            var padding = void 0;
+	            var modifier = void 0;
+	            var offset = 0;
+	            var x = this.x;
+	            for (var i = 0; i < begModifiers.length; i++) {
+	                modifier = begModifiers[i];
+	                padding = modifier.getPadding(i + offset);
+	                width = modifier.getWidth();
+	
+	                x += padding;
+	                modifier.setX(x);
+	                x += width;
+	
+	                if (padding + width === 0) offset--;
+	            }
+	
+	            this.start_x = x;
+	            x = this.x + this.width;
+	
+	            for (var _i = 0; _i < endModifiers.length; _i++) {
+	                modifier = endModifiers[_i];
+	                x -= modifier.getPadding(_i);
+	                if (_i !== 0) {
+	                    x -= modifier.getWidth();
+	                }
+	
+	                modifier.setX(x);
+	
+	                if (_i === 0) {
+	                    x -= modifier.getWidth();
+	                }
+	            }
+	
+	            this.end_x = endModifiers.length === 1 ? this.x + this.width : x;
+	            this.formatted = true;
+	        }
+	
+	        /**
+	         * All drawing functions below need the context to be set.
+	         */
+	
+	    }, {
+	        key: 'draw',
+	        value: function draw() {
+	            this.checkContext();
+	            this.setRendered();
+	
+	            if (!this.formatted) this.format();
+	
+	            var num_lines = this.options.num_lines;
+	            var width = this.width;
+	            var x = this.x;
+	            var y = void 0;
+	
+	            // Render lines
+	            for (var line = 0; line < num_lines; line++) {
+	                y = this.getYForLine(line);
+	
+	                this.context.save();
+	                this.context.setFillStyle(this.options.fill_style);
+	                this.context.setStrokeStyle(this.options.fill_style);
+	                this.context.setLineWidth(_tables.Flow.STAVE_LINE_THICKNESS);
+	                if (this.options.line_config[line].visible) {
+	                    this.context.beginPath();
+	                    this.context.moveTo(x, y);
+	                    this.context.lineTo(x + width, y);
+	                    this.context.stroke();
+	                }
+	                this.context.restore();
+	            }
+	
+	            // Draw the modifiers (bar lines, coda, segno, repeat brackets, etc.)
+	            for (var i = 0; i < this.modifiers.length; i++) {
+	                // Only draw modifier if it has a draw function
+	                if (typeof this.modifiers[i].draw === 'function') {
+	                    this.modifiers[i].draw(this, this.getModifierXShift(i));
+	                }
+	            }
+	
+	            // Render measure numbers
+	            if (this.measure > 0) {
+	                this.context.save();
+	                this.context.setFont(this.font.family, this.font.size, this.font.weight);
+	                var text_width = this.context.measureText('' + this.measure).width;
+	                y = this.getYForTopText(0) + 3;
+	                this.context.fillText('' + this.measure, this.x - text_width / 2, y);
+	                this.context.restore();
+	            }
+	
+	            return this;
+	        }
+	
+	        // Draw Simple barlines for backward compatability
+	        // Do not delete - draws the beginning bar of the stave
+	
+	    }, {
+	        key: 'drawVertical',
+	        value: function drawVertical(x, isDouble) {
+	            this.drawVerticalFixed(this.x + x, isDouble);
+	        }
+	    }, {
+	        key: 'drawVerticalFixed',
+	        value: function drawVerticalFixed(x, isDouble) {
+	            this.checkContext();
+	
+	            var top_line = this.getYForLine(0);
+	            var bottom_line = this.getYForLine(this.options.num_lines - 1);
+	            if (isDouble) {
+	                this.context.fillRect(x - 3, top_line, 1, bottom_line - top_line + 1);
+	            }
+	            this.context.fillRect(x, top_line, 1, bottom_line - top_line + 1);
+	        }
+	    }, {
+	        key: 'drawVerticalBar',
+	        value: function drawVerticalBar(x) {
+	            this.drawVerticalBarFixed(this.x + x, false);
+	        }
+	    }, {
+	        key: 'drawVerticalBarFixed',
+	        value: function drawVerticalBarFixed(x) {
+	            this.checkContext();
+	
+	            var top_line = this.getYForLine(0);
+	            var bottom_line = this.getYForLine(this.options.num_lines - 1);
+	            this.context.fillRect(x, top_line, 1, bottom_line - top_line + 1);
+	        }
+	
+	        /**
+	         * Get the current configuration for the Stave.
+	         * @return {Array} An array of configuration objects.
+	         */
+	
+	    }, {
+	        key: 'getConfigForLines',
+	        value: function getConfigForLines() {
+	            return this.options.line_config;
+	        }
+	
+	        /**
+	         * Configure properties of the lines in the Stave
+	         * @param line_number The index of the line to configure.
+	         * @param line_config An configuration object for the specified line.
+	         * @throws Vex.RERR "StaveConfigError" When the specified line number is out of
+	         *   range of the number of lines specified in the constructor.
+	         */
+	
+	    }, {
+	        key: 'setConfigForLine',
+	        value: function setConfigForLine(line_number, line_config) {
+	            if (line_number >= this.options.num_lines || line_number < 0) {
+	                throw new _vex.Vex.RERR('StaveConfigError', 'The line number must be within the range of the number of lines in the Stave.');
+	            }
+	
+	            if (line_config.visible === undefined) {
+	                throw new _vex.Vex.RERR('StaveConfigError', "The line configuration object is missing the 'visible' property.");
+	            }
+	
+	            if (typeof line_config.visible !== 'boolean') {
+	                throw new _vex.Vex.RERR('StaveConfigError', "The line configuration objects 'visible' property must be true or false.");
+	            }
+	
+	            this.options.line_config[line_number] = line_config;
+	
+	            return this;
+	        }
+	
+	        /**
+	         * Set the staff line configuration array for all of the lines at once.
+	         * @param lines_configuration An array of line configuration objects.  These objects
+	         *   are of the same format as the single one passed in to setLineConfiguration().
+	         *   The caller can set null for any line config entry if it is desired that the default be used
+	         * @throws Vex.RERR "StaveConfigError" When the lines_configuration array does not have
+	         *   exactly the same number of elements as the num_lines configuration object set in
+	         *   the constructor.
+	         */
+	
+	    }, {
+	        key: 'setConfigForLines',
+	        value: function setConfigForLines(lines_configuration) {
+	            if (lines_configuration.length !== this.options.num_lines) {
+	                throw new _vex.Vex.RERR('StaveConfigError', 'The length of the lines configuration array must match the number of lines in the Stave');
+	            }
+	
+	            // Make sure the defaults are present in case an incomplete set of
+	            //  configuration options were supplied.
+	            for (var line_config in lines_configuration) {
+	                // Allow 'null' to be used if the caller just wants the default for a particular node.
+	                if (!lines_configuration[line_config]) {
+	                    lines_configuration[line_config] = this.options.line_config[line_config];
+	                }
+	                _vex.Vex.Merge(this.options.line_config[line_config], lines_configuration[line_config]);
+	            }
+	
+	            this.options.line_config = lines_configuration;
+	
+	            return this;
+	        }
+	
+	        /*
+	         * Vex.Flow.Stave extensions
+	         */
+	
+	    }, {
+	        key: 'setTickables',
+	        value: function setTickables(tickables) {
+	            this.tickables = tickables;
+	        }
+	    }, {
+	        key: 'getTickables',
+	        value: function getTickables() {
+	            return this.tickables;
+	        }
+	    }, {
+	        key: 'getNotes',
+	        value: function getNotes() {
+	            var notes = [];
+	
+	            for (var i = 0; i < this.tickables.length; i++) {
+	                var tickable = this.tickables[i];
+	                if (tickable instanceof _vex.Vex.Flow.StaveNote) {
+	                    notes.push(tickable);
+	                }
+	            }
+	
+	            return notes;
+	        }
+	    }, {
+	        key: 'insertTickableBetween',
+	        value: function insertTickableBetween(newTickable, previousTickable, nextTickable) {
+	            if (newTickable instanceof _vex.Vex.Flow.ClefNote) {
+	                // If the stave has no clef modifiers, then add it.
+	                if (this.getClefModifierIndex() < 0) {
+	                    this.addClef(newTickable.clefKey);
+	                    // If the stave already has a clef, but the user clicked before any
+	                    // other tickable, then replace the stave clef
+	                    return;
+	                } else if (previousTickable == null) {
+	                    this.replaceClef(newTickable.clefKey);
+	                    // Else add it as a normal ClefNote as long as the stave already has
+	                    // notes, so leave otherwise
+	                    return;
+	                } else if (this.getNotes().length === 0) {
+	                    return;
+	                }
+	            } else if (newTickable instanceof _vex.Vex.Flow.BarNote) {
+	                // If the BarNote is to be inserted after everything, then modify the end bar of the stave
+	                if (nextTickable == null) {
+	                    this.setEndBarType(newTickable.type);
+	                    // Else add it as a normal BarNote as long as the stave already has notes, so leave
+	                    // otherwise
+	                    return;
+	                } else if (this.getNotes().length === 0) {
+	                    return;
+	                }
+	            }
+	
+	            if (nextTickable == null) {
+	                this.pushTickable(newTickable);
+	            } else {
+	                var referenceIndex = this.tickables.indexOf(nextTickable);
+	                this.tickables.splice(referenceIndex, 0, newTickable);
+	            }
+	        }
+	    }, {
+	        key: 'getClefModifierIndex',
+	        value: function getClefModifierIndex() {
+	            // Remove all clefs currently in the stave
+	            for (var i = 0; i < this.modifiers.length; i++) {
+	                var modifier = this.modifiers[i];
+	
+	                if (modifier instanceof _vex.Vex.Flow.Clef) {
+	                    return i;
+	                }
+	            }
+	
+	            return -1;
+	        }
+	    }, {
+	        key: 'replaceClef',
+	        value: function replaceClef(clef) {
+	            var start_X = this.start_x;
+	            this.clef = clef;
+	            // const modifier = new Vex.Flow.Clef(clef);
+	            this.modifiers.splice(this.getClefModifierIndex(), 1);
+	            this.glyphs = [];
+	            this.addClef(clef);
+	
+	            this.start_x = start_X;
+	        }
+	    }, {
+	        key: 'getPreviousTickable',
+	        value: function getPreviousTickable(referenceTickable) {
+	            var referenceIndex = this.tickables.indexOf(referenceTickable);
+	            if (referenceIndex === 0) {
+	                return null;
+	            }
+	
+	            return this.tickables[referenceIndex - 1];
+	        }
+	    }, {
+	        key: 'getNextTickable',
+	        value: function getNextTickable(referenceTickable) {
+	            var referenceIndex = this.tickables.indexOf(referenceTickable);
+	            if (referenceIndex === this.tickables.length - 1) {
+	                return null;
+	            }
+	
+	            return this.tickables[referenceIndex + 1];
+	        }
+	    }, {
+	        key: 'getNextNote',
+	        value: function getNextNote(referenceNote) {
+	            var referenceIndex = this.tickables.indexOf(referenceNote);
+	            while (referenceIndex < this.tickables.length) {
+	                referenceIndex++;
+	                if (this.tickables[referenceIndex] instanceof _vex.Vex.Flow.StaveNote) {
+	                    return this.tickables[referenceIndex];
+	                }
+	            }
+	
+	            return null;
+	        }
+	    }, {
+	        key: 'replaceTickable',
+	        value: function replaceTickable(oldTickable, newTickable) {
+	            // Replacing note in beam.
+	            if (oldTickable.beam != null) {
+	                var beam = oldTickable.beam;
+	                var _referenceIndex = beam.tickables.indexOf(oldTickable);
+	                beam.notes[_referenceIndex] = newTickable;
+	            }
+	
+	            var referenceIndex = this.tickables.indexOf(oldTickable);
+	            this.tickables[referenceIndex] = newTickable;
+	        }
+	    }, {
+	        key: 'removeTickable',
+	        value: function removeTickable(tickable) {
+	            this.tickables.splice(this.tickables.indexOf(tickable), 1);
+	        }
+	    }, {
+	        key: 'removeAllTickables',
+	        value: function removeAllTickables() {
+	            this.tickables = [];
+	        }
+	    }, {
+	        key: 'pushTickable',
+	        value: function pushTickable(newTickable) {
+	            this.tickables.push(newTickable);
+	        }
+	    }, {
+	        key: 'setBeams',
+	        value: function setBeams(beamList) {
+	            this.beams = beamList;
+	        }
+	    }, {
+	        key: 'getBeams',
+	        value: function getBeams() {
+	            return this.beams;
+	        }
+	    }, {
+	        key: 'pushBeam',
+	        value: function pushBeam(newBeam) {
+	            this.beams.push(newBeam);
+	        }
+	    }]);
 
-	  return Stave;
+	    return Stave;
 	}(_element.Element);
 
 /***/ }),

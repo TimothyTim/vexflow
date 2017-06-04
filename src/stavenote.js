@@ -414,7 +414,13 @@ export class StaveNote extends StemmableNote {
     }
 
   // Builds a `NoteHead` for each key in the note
-    buildNoteHeads() {
+    buildNoteHeads(noteHeadStyle) {
+        noteHeadStyle = noteHeadStyle || {
+            'shadowBlur': 0,
+            'shadowColor': '#8c8c8c',
+            'fillStyle': '#8c8c8c',
+            'strokeStyle': '#8c8c8c',
+        };
         this.note_heads = [];
         const stemDirection = this.getStemDirection();
         const keys = this.getKeys();
@@ -467,11 +473,7 @@ export class StaveNote extends StemmableNote {
                 glyph_font_scale: this.render_options.glyph_font_scale,
                 x_shift: noteProps.shift_right,
                 line: noteProps.line,
-                style: {
-                    'shadowBlur': 0,
-                    'shadowColor': '#8c8c8c',
-                    'fillStyle': '#8c8c8c',
-                    'strokeStyle': '#8c8c8c' },
+                style: noteHeadStyle,
             });
 
 
@@ -543,18 +545,43 @@ export class StaveNote extends StemmableNote {
             this.keyProps.push(props);
         }
 
-    // Sort the notes from lowest line to highest line
-    // lastLine = -Infinity;
-    // this.keyProps.forEach(key => {
-    //   if (key.line < lastLine) {
-    //     Vex.W(
-    //       'Unsorted keys in note will be sorted. ' +
-    //       'See https://github.com/0xfe/vexflow/issues/104 for details.'
-    //     );
-    //   }
-    //   lastLine = key.line;
-    // });
-    // this.keyProps.sort((a, b) => a.line - b.line);
+        // Sort the notes from lowest line to highest line
+        lastLine = -Infinity;
+        const oldKeyProps = [...this.keyProps];
+        oldKeyProps.forEach(key => {
+            // if (key.line < lastLine) {
+            //     Vex.W(
+            //         'Unsorted keys in note will be sorted. ' +
+            //         'See https://github.com/0xfe/vexflow/issues/104 for details.'
+            //     );
+            // }
+            lastLine = key.line;
+        });
+        this.keyProps.sort((a, b) => a.line - b.line);
+        // sort keys
+        this.setKeysFromKeyProps();
+    }
+
+    accidentalToLowerCase(key) {
+        let keyCopy = (' ' + key).slice(1);
+        if (keyCopy.length > 1) {
+            const key = keyCopy.slice(0, 1);
+            const lowercaseAccidental = keyCopy.slice(1, keyCopy.length).toLowerCase();
+            keyCopy = key + lowercaseAccidental;
+        }
+
+        return keyCopy;
+    }
+
+    setKeysFromKeyProps() {
+        const newKeys = [];
+
+        this.keyProps.forEach((keyProp) => {
+            const newKey = this.accidentalToLowerCase(keyProp.key);
+            newKeys.push(newKey + '/' + keyProp.octave);
+        });
+
+        this.setKeys(newKeys);
     }
 
   // Get the `BoundingBox` for the entire note
@@ -823,6 +850,10 @@ export class StaveNote extends StemmableNote {
         return this;
     }
 
+    getModifierContext() {
+        return this.modifierContext;
+    }
+
   // Generic function to add modifiers to a note
   //
   // Parameters:
@@ -836,6 +867,10 @@ export class StaveNote extends StemmableNote {
         return this;
     }
 
+    getModifiers() {
+        return this.modifiers;
+    }
+
   // Helper function to add an accidental to a key
     addAccidental(index, accidental) {
         return this.addModifier(index, accidental);
@@ -843,6 +878,10 @@ export class StaveNote extends StemmableNote {
 
     removeAccidental(index) {
         this.modifiers.splice(index, 1);
+    }
+
+    removeModifiers() {
+        this.modifiers = [];
     }
 
   // Helper function to add an articulation to a key
@@ -1169,8 +1208,7 @@ export class StaveNote extends StemmableNote {
             this.setStyle(highlightPlayerNoteStyle);
         } else if (highlight) {
             this.setStyle(highlightNoteStyle);
-
-            if (keyIndex) {
+            if (keyIndex >= 0) {
                 this.setKeyStyle(keyIndex, highlightKeyStyle);
             }
         } else {
@@ -1178,7 +1216,7 @@ export class StaveNote extends StemmableNote {
         }
     }
 
-  // TODO Clone Ties
+    // TODO Clone Ties
     clone(newProps) {
         const currentProps = {
             keys: this.keys,
@@ -1195,7 +1233,9 @@ export class StaveNote extends StemmableNote {
         // Setting the style as the same style as the note head
         newNote.setStyle(this.note_heads[0].style);
 
-        if (this.modifierContext != null && this.getDots() != null)      { newNote.addDotToAll(); }
+        if (this.modifierContext != null && this.getDots() != null) {
+            newNote.addDotToAll();
+        }
 
         newNote.beam = this.beam;
 
@@ -1203,9 +1243,9 @@ export class StaveNote extends StemmableNote {
         for (let i = 0; i < this.modifiers.length; i++) {
             if (this.modifiers[0] instanceof Vex.Flow.Accidental) {
                 newNote.addAccidental(
-            this.modifiers[i].index,
-            new Vex.Flow.Accidental(this.modifiers[i].type)
-        );
+                    this.modifiers[i].index,
+                    new Vex.Flow.Accidental(this.modifiers[i].type)
+                );
             }
         }
 
@@ -1219,9 +1259,9 @@ export class StaveNote extends StemmableNote {
         for (let i = 0; i < this.keys.length; i++) {
             let key = this.keys[i].replace('/', '');
             key = key.replace('#', '');
-            key = key.replace('#', '');
+            key = key.replace('##', '');
             key = key.replace('b', '');
-            key = key.replace('b', '');
+            key = key.replace('bb', '');
             key = key.replace('n', '');
             notes.push(MIDI.keyToNote[key]);
         }

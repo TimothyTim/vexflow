@@ -16,129 +16,133 @@ import { TimeSignature } from './timesignature';
 import { Volta } from './stavevolta';
 
 export class Stave extends Element {
-  constructor(x, y, width, options) {
-    super();
-    this.setAttribute('type', 'Stave');
+    constructor(x, y, width, options) {
+        super();
+        this.setAttribute('type', 'Stave');
 
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.formatted = false;
-    this.start_x = x + 5;
-    this.end_x = x + width;
-    this.modifiers = [];  // stave modifiers (clef, key, time, barlines, coda, segno, etc.)
-    this.measure = 0;
-    this.clef = 'treble';
-    this.font = {
-      family: 'sans-serif',
-      size: 8,
-      weight: '',
-    };
-    this.options = {
-      vertical_bar_width: 10,       // Width around vertical bar end-marker
-      glyph_spacing_px: 10,
-      num_lines: 5,
-      fill_style: '#999999',
-      left_bar: true,               // draw vertical bar on left
-      right_bar: true,               // draw vertical bar on right
-      spacing_between_lines_px: 10, // in pixels
-      space_above_staff_ln: 4,      // in staff lines
-      space_below_staff_ln: 4,      // in staff lines
-      top_text_position: 1,          // in staff lines
-    };
-    this.tickables = [];
-    this.beams = [];
-    this.bounds = { x: this.x, y: this.y, w: this.width, h: 0 };
-    Vex.Merge(this.options, options);
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.formatted = false;
+        this.start_x = x + 5;
+        this.end_x = x + width;
+        this.modifiers = [];  // stave modifiers (clef, key, time, barlines, coda, segno, etc.)
+        this.measure = 0;
+        this.clef = 'treble';
+        this.font = {
+            family: 'sans-serif',
+            size: 8,
+            weight: '',
+        };
+        this.options = {
+            vertical_bar_width: 10,       // Width around vertical bar end-marker
+            glyph_spacing_px: 10,
+            num_lines: 5,
+            fill_style: '#999999',
+            left_bar: true,               // draw vertical bar on left
+            right_bar: true,               // draw vertical bar on right
+            spacing_between_lines_px: 10, // in pixels
+            space_above_staff_ln: 4,      // in staff lines
+            space_below_staff_ln: 4,      // in staff lines
+            top_text_position: 1,          // in staff lines
+        };
+        this.tickables = [];
+        this.activeKey = {
+            activeTickable: null,
+            activeKeyIndex: null,
+        };
+        this.beams = [];
+        this.bounds = { x: this.x, y: this.y, w: this.width, h: 0 };
+        Vex.Merge(this.options, options);
 
-    this.resetLines();
+        this.resetLines();
 
-    const BARTYPE = Barline.type;
+        const BARTYPE = Barline.type;
     // beg bar
-    this.addModifier(new Barline(this.options.left_bar ? BARTYPE.SINGLE : BARTYPE.NONE));
+        this.addModifier(new Barline(this.options.left_bar ? BARTYPE.SINGLE : BARTYPE.NONE));
     // end bar
-    this.addEndModifier(new Barline(this.options.right_bar ? BARTYPE.SINGLE : BARTYPE.NONE));
-  }
-
-  space(spacing) { return this.options.spacing_between_lines_px * spacing; }
-
-  resetLines() {
-    this.options.line_config = [];
-    for (let i = 0; i < this.options.num_lines; i++) {
-      this.options.line_config.push({ visible: true });
+        this.addEndModifier(new Barline(this.options.right_bar ? BARTYPE.SINGLE : BARTYPE.NONE));
     }
-    this.height = (this.options.num_lines + this.options.space_above_staff_ln) *
+
+    space(spacing) { return this.options.spacing_between_lines_px * spacing; }
+
+    resetLines() {
+        this.options.line_config = [];
+        for (let i = 0; i < this.options.num_lines; i++) {
+            this.options.line_config.push({ visible: true });
+        }
+        this.height = (this.options.num_lines + this.options.space_above_staff_ln) *
        this.options.spacing_between_lines_px;
-    this.options.bottom_text_position = this.options.num_lines;
-  }
-
-  getOptions() { return this.options; }
-
-  setNoteStartX(x) {
-    if (!this.formatted) this.format();
-
-    this.start_x = x;
-    return this;
-  }
-  getNoteStartX() {
-    if (!this.formatted) this.format();
-
-    return this.start_x;
-  }
-
-  getNoteEndX() {
-    if (!this.formatted) this.format();
-
-    return this.end_x;
-  }
-  getTieStartX() { return this.start_x; }
-  getTieEndX() { return this.x + this.width; }
-  getX() { return this.x; }
-  getNumLines() { return this.options.num_lines; }
-  setNumLines(lines) {
-    this.options.num_lines = parseInt(lines, 10);
-    this.resetLines();
-    return this;
-  }
-  setY(y) { this.y = y; return this; }
-
-  getTopLineTopY() {
-    return this.getYForLine(0) - (Flow.STAVE_LINE_THICKNESS / 2);
-  }
-  getBottomLineBottomY() {
-    return this.getYForLine(this.getNumLines() - 1) + (Flow.STAVE_LINE_THICKNESS / 2);
-  }
-
-  setX(x) {
-    const shift = x - this.x;
-    this.formatted = false;
-    this.x = x;
-    this.start_x += shift;
-    this.end_x += shift;
-    for (let i = 0; i < this.modifiers.length; i++) {
-      const mod = this.modifiers[i];
-      if (mod.x !== undefined) {
-        mod.x += shift;
-      }
+        this.options.bottom_text_position = this.options.num_lines;
     }
-    return this;
-  }
 
-  setWidth(width) {
-    this.formatted = false;
-    this.width = width;
-    this.end_x = this.x + width;
+    getOptions() { return this.options; }
+
+    setNoteStartX(x) {
+        if (!this.formatted) this.format();
+
+        this.start_x = x;
+        return this;
+    }
+    getNoteStartX() {
+        if (!this.formatted) this.format();
+
+        return this.start_x;
+    }
+
+    getNoteEndX() {
+        if (!this.formatted) this.format();
+
+        return this.end_x;
+    }
+    getTieStartX() { return this.start_x; }
+    getTieEndX() { return this.x + this.width; }
+    getX() { return this.x; }
+    getNumLines() { return this.options.num_lines; }
+    setNumLines(lines) {
+        this.options.num_lines = parseInt(lines, 10);
+        this.resetLines();
+        return this;
+    }
+    setY(y) { this.y = y; return this; }
+
+    getTopLineTopY() {
+        return this.getYForLine(0) - (Flow.STAVE_LINE_THICKNESS / 2);
+    }
+    getBottomLineBottomY() {
+        return this.getYForLine(this.getNumLines() - 1) + (Flow.STAVE_LINE_THICKNESS / 2);
+    }
+
+    setX(x) {
+        const shift = x - this.x;
+        this.formatted = false;
+        this.x = x;
+        this.start_x += shift;
+        this.end_x += shift;
+        for (let i = 0; i < this.modifiers.length; i++) {
+            const mod = this.modifiers[i];
+            if (mod.x !== undefined) {
+                mod.x += shift;
+            }
+        }
+        return this;
+    }
+
+    setWidth(width) {
+        this.formatted = false;
+        this.width = width;
+        this.end_x = this.x + width;
 
     // reset the x position of the end barline (TODO(0xfe): This makes no sense)
     // this.modifiers[1].setX(this.end_x);
-    return this;
-  }
+        return this;
+    }
 
-  getWidth() {
-    return this.width;
-  }
+    getWidth() {
+        return this.width;
+    }
 
-  setMeasure(measure) { this.measure = measure; return this; }
+    setMeasure(measure) { this.measure = measure; return this; }
 
   /**
    * Gets the pixels to shift from the beginning of the stave
@@ -146,434 +150,442 @@ export class Stave extends Element {
    * @param  {Number} index The index from which to determine the shift
    * @return {Number}       The amount of pixels shifted
    */
-  getModifierXShift(index = 0) {
-    if (typeof index !== 'number') {
-      throw new Vex.RERR('InvalidIndex', 'Must be of number type');
+    getModifierXShift(index = 0) {
+        if (typeof index !== 'number') {
+            throw new Vex.RERR('InvalidIndex', 'Must be of number type');
+        }
+
+        if (!this.formatted) this.format();
+
+        if (this.getModifiers(StaveModifier.Position.BEGIN).length === 1) {
+            return 0;
+        }
+
+        let start_x = this.start_x - this.x;
+        const begBarline = this.modifiers[0];
+        if (begBarline.getType() === Barline.type.REPEAT_BEGIN && start_x > begBarline.getWidth()) {
+            start_x -= begBarline.getWidth();
+        }
+
+        return start_x;
     }
-
-    if (!this.formatted) this.format();
-
-    if (this.getModifiers(StaveModifier.Position.BEGIN).length === 1) {
-      return 0;
-    }
-
-    let start_x = this.start_x - this.x;
-    const begBarline = this.modifiers[0];
-    if (begBarline.getType() === Barline.type.REPEAT_BEGIN && start_x > begBarline.getWidth()) {
-      start_x -= begBarline.getWidth();
-    }
-
-    return start_x;
-  }
 
   // Coda & Segno Symbol functions
-  setRepetitionTypeLeft(type, y) {
-    this.modifiers.push(new Repetition(type, this.x, y));
-    return this;
-  }
+    setRepetitionTypeLeft(type, y) {
+        this.modifiers.push(new Repetition(type, this.x, y));
+        return this;
+    }
 
-  setRepetitionTypeRight(type, y) {
-    this.modifiers.push(new Repetition(type, this.x, y));
-    return this;
-  }
+    setRepetitionTypeRight(type, y) {
+        this.modifiers.push(new Repetition(type, this.x, y));
+        return this;
+    }
 
   // Volta functions
-  setVoltaType(type, number_t, y) {
-    this.modifiers.push(new Volta(type, number_t, this.x, y));
-    return this;
-  }
+    setVoltaType(type, number_t, y) {
+        this.modifiers.push(new Volta(type, number_t, this.x, y));
+        return this;
+    }
 
   // Section functions
-  setSection(section, y) {
-    this.modifiers.push(new StaveSection(section, this.x, y));
-    return this;
-  }
+    setSection(section, y) {
+        this.modifiers.push(new StaveSection(section, this.x, y));
+        return this;
+    }
 
   // Tempo functions
-  setTempo(tempo, y) {
-    this.modifiers.push(new StaveTempo(tempo, this.x, y));
-    return this;
-  }
+    setTempo(tempo, y) {
+        this.modifiers.push(new StaveTempo(tempo, this.x, y));
+        return this;
+    }
 
   // Text functions
-  setText(text, position, options) {
-    this.modifiers.push(new StaveText(text, position, options));
-    return this;
-  }
+    setText(text, position, options) {
+        this.modifiers.push(new StaveText(text, position, options));
+        return this;
+    }
 
-  getHeight() {
-    return this.height;
-  }
+    getHeight() {
+        return this.height;
+    }
 
-  getSpacingBetweenLines() {
-    return this.options.spacing_between_lines_px;
-  }
+    getActiveKey() {
+        return this.activeKey;
+    }
 
-  getBoundingBox() {
-    return new BoundingBox(this.x, this.y, this.width, this.getBottomY() - this.y);
-  }
+    setActiveKey(activeKey) {
+        this.activeKey = activeKey;
+    }
 
-  getBottomY() {
-    const options = this.options;
-    const spacing = options.spacing_between_lines_px;
-    const score_bottom = this.getYForLine(options.num_lines) +
+    getSpacingBetweenLines() {
+        return this.options.spacing_between_lines_px;
+    }
+
+    getBoundingBox() {
+        return new BoundingBox(this.x, this.y, this.width, this.getBottomY() - this.y);
+    }
+
+    getBottomY() {
+        const options = this.options;
+        const spacing = options.spacing_between_lines_px;
+        const score_bottom = this.getYForLine(options.num_lines) +
        (options.space_below_staff_ln * spacing);
 
-    return score_bottom;
-  }
+        return score_bottom;
+    }
 
-  getBottomLineY() {
-    return this.getYForLine(this.options.num_lines);
-  }
+    getBottomLineY() {
+        return this.getYForLine(this.options.num_lines);
+    }
 
   // This returns the y for the *center* of a staff line
-  getYForLine(line) {
-    const options = this.options;
-    const spacing = options.spacing_between_lines_px;
-    const headroom = options.space_above_staff_ln;
+    getYForLine(line) {
+        const options = this.options;
+        const spacing = options.spacing_between_lines_px;
+        const headroom = options.space_above_staff_ln;
 
-    const y = this.y + (line * spacing) + (headroom * spacing);
+        const y = this.y + (line * spacing) + (headroom * spacing);
 
-    return y;
-  }
+        return y;
+    }
 
-  getLineForY(y) {
+    getLineForY(y) {
     // Does the reverse of getYForLine - somewhat dumb and just calls
     // getYForLine until the right value is reaches
 
-    const options = this.options;
-    const spacing = options.spacing_between_lines_px;
-    const headroom = options.space_above_staff_ln;
-    return ((y - this.y) / spacing) - headroom;
-  }
-
-  getYForTopText(line) {
-    const l = line || 0;
-    return this.getYForLine(-l - this.options.top_text_position);
-  }
-
-  getYForBottomText(line) {
-    const l = line || 0;
-    return this.getYForLine(this.options.bottom_text_position + l);
-  }
-
-  getYForNote(line) {
-    const options = this.options;
-    const spacing = options.spacing_between_lines_px;
-    const headroom = options.space_above_staff_ln;
-    const y = this.y + (headroom * spacing) + (5 * spacing) - (line * spacing);
-
-    return y;
-  }
-
-  getYForGlyphs() {
-    return this.getYForLine(3);
-  }
-
-  addModifier(modifier, position) {
-    if (position !== undefined) {
-      modifier.setPosition(position);
+        const options = this.options;
+        const spacing = options.spacing_between_lines_px;
+        const headroom = options.space_above_staff_ln;
+        return ((y - this.y) / spacing) - headroom;
     }
 
-    modifier.setStave(this);
-    this.formatted = false;
-    this.modifiers.push(modifier);
-    return this;
-  }
+    getYForTopText(line) {
+        const l = line || 0;
+        return this.getYForLine(-l - this.options.top_text_position);
+    }
 
-  addEndModifier(modifier) {
-    this.addModifier(modifier, StaveModifier.Position.END);
-    return this;
-  }
+    getYForBottomText(line) {
+        const l = line || 0;
+        return this.getYForLine(this.options.bottom_text_position + l);
+    }
+
+    getYForNote(line) {
+        const options = this.options;
+        const spacing = options.spacing_between_lines_px;
+        const headroom = options.space_above_staff_ln;
+        const y = this.y + (headroom * spacing) + (5 * spacing) - (line * spacing);
+
+        return y;
+    }
+
+    getYForGlyphs() {
+        return this.getYForLine(3);
+    }
+
+    addModifier(modifier, position) {
+        if (position !== undefined) {
+            modifier.setPosition(position);
+        }
+
+        modifier.setStave(this);
+        this.formatted = false;
+        this.modifiers.push(modifier);
+        return this;
+    }
+
+    addEndModifier(modifier) {
+        this.addModifier(modifier, StaveModifier.Position.END);
+        return this;
+    }
 
   // Bar Line functions
-  setBegBarType(type) {
+    setBegBarType(type) {
     // Only valid bar types at beginning of stave is none, single or begin repeat
-    const { SINGLE, REPEAT_BEGIN, NONE } = Barline.type;
-    if (type === SINGLE || type === REPEAT_BEGIN || type === NONE) {
-      this.modifiers[0].setType(type);
-      this.formatted = false;
+        const { SINGLE, REPEAT_BEGIN, NONE } = Barline.type;
+        if (type === SINGLE || type === REPEAT_BEGIN || type === NONE) {
+            this.modifiers[0].setType(type);
+            this.formatted = false;
+        }
+        return this;
     }
-    return this;
-  }
 
-  setEndBarType(type) {
+    setEndBarType(type) {
     // Repeat end not valid at end of stave
-    if (type !== Barline.type.REPEAT_BEGIN) {
-      this.modifiers[1].setType(type);
-      this.formatted = false;
-    }
-    return this;
-  }
-
-  setClef(clefSpec, size, annotation, position) {
-    if (position === undefined) {
-      position = StaveModifier.Position.BEGIN;
+        if (type !== Barline.type.REPEAT_BEGIN) {
+            this.modifiers[1].setType(type);
+            this.formatted = false;
+        }
+        return this;
     }
 
-    this.clef = clefSpec;
-    const clefs = this.getModifiers(position, Clef.CATEGORY);
-    if (clefs.length === 0) {
-      this.addClef(clefSpec, size, annotation, position);
-    } else {
-      clefs[0].setType(clefSpec, size, annotation);
+    setClef(clefSpec, size, annotation, position) {
+        if (position === undefined) {
+            position = StaveModifier.Position.BEGIN;
+        }
+
+        this.clef = clefSpec;
+        const clefs = this.getModifiers(position, Clef.CATEGORY);
+        if (clefs.length === 0) {
+            this.addClef(clefSpec, size, annotation, position);
+        } else {
+            clefs[0].setType(clefSpec, size, annotation);
+        }
+
+        return this;
     }
 
-    return this;
-  }
-
-  setEndClef(clefSpec, size, annotation) {
-    this.setClef(clefSpec, size, annotation, StaveModifier.Position.END);
-    return this;
-  }
-
-  setKeySignature(keySpec, cancelKeySpec, position) {
-    if (position === undefined) {
-      position = StaveModifier.Position.BEGIN;
+    setEndClef(clefSpec, size, annotation) {
+        this.setClef(clefSpec, size, annotation, StaveModifier.Position.END);
+        return this;
     }
 
-    const keySignatures = this.getModifiers(position, KeySignature.CATEGORY);
-    if (keySignatures.length === 0) {
-      this.addKeySignature(keySpec, cancelKeySpec, position);
-    } else {
-      keySignatures[0].setKeySig(keySpec, cancelKeySpec);
+    setKeySignature(keySpec, cancelKeySpec, position) {
+        if (position === undefined) {
+            position = StaveModifier.Position.BEGIN;
+        }
+
+        const keySignatures = this.getModifiers(position, KeySignature.CATEGORY);
+        if (keySignatures.length === 0) {
+            this.addKeySignature(keySpec, cancelKeySpec, position);
+        } else {
+            keySignatures[0].setKeySig(keySpec, cancelKeySpec);
+        }
+
+        return this;
     }
 
-    return this;
-  }
-
-  setEndKeySignature(keySpec, cancelKeySpec) {
-    this.setKeySignature(keySpec, cancelKeySpec, StaveModifier.Position.END);
-    return this;
-  }
-
-  setTimeSignature(timeSpec, customPadding, position) {
-    if (position === undefined) {
-      position = StaveModifier.Position.BEGIN;
+    setEndKeySignature(keySpec, cancelKeySpec) {
+        this.setKeySignature(keySpec, cancelKeySpec, StaveModifier.Position.END);
+        return this;
     }
 
-    const timeSignatures = this.getModifiers(position, TimeSignature.CATEGORY);
-    if (timeSignatures.length === 0) {
-      this.addTimeSignature(timeSpec, customPadding, position);
-    } else {
-      timeSignatures[0].setTimeSig(timeSpec);
+    setTimeSignature(timeSpec, customPadding, position) {
+        if (position === undefined) {
+            position = StaveModifier.Position.BEGIN;
+        }
+
+        const timeSignatures = this.getModifiers(position, TimeSignature.CATEGORY);
+        if (timeSignatures.length === 0) {
+            this.addTimeSignature(timeSpec, customPadding, position);
+        } else {
+            timeSignatures[0].setTimeSig(timeSpec);
+        }
+
+        return this;
     }
 
-    return this;
-  }
-
-  setEndTimeSignature(timeSpec, customPadding) {
-    this.setTimeSignature(timeSpec, customPadding, StaveModifier.Position.END);
-    return this;
-  }
-
-  addKeySignature(keySpec, cancelKeySpec, position) {
-    this.addModifier(new KeySignature(keySpec, cancelKeySpec), position);
-    return this;
-  }
-
-  addClef(clef, size, annotation, position) {
-    if (position === undefined || position === StaveModifier.Position.BEGIN) {
-      this.clef = clef;
+    setEndTimeSignature(timeSpec, customPadding) {
+        this.setTimeSignature(timeSpec, customPadding, StaveModifier.Position.END);
+        return this;
     }
 
-    this.addModifier(new Clef(clef, size, annotation), position);
-    return this;
-  }
+    addKeySignature(keySpec, cancelKeySpec, position) {
+        this.addModifier(new KeySignature(keySpec, cancelKeySpec), position);
+        return this;
+    }
 
-  addEndClef(clef, size, annotation) {
-    this.addClef(clef, size, annotation, StaveModifier.Position.END);
-    return this;
-  }
+    addClef(clef, size, annotation, position) {
+        if (position === undefined || position === StaveModifier.Position.BEGIN) {
+            this.clef = clef;
+        }
 
-  addTimeSignature(timeSpec, customPadding, position) {
-    this.addModifier(new TimeSignature(timeSpec, customPadding), position);
-    return this;
-  }
+        this.addModifier(new Clef(clef, size, annotation), position);
+        return this;
+    }
 
-  addEndTimeSignature(timeSpec, customPadding) {
-    this.addTimeSignature(timeSpec, customPadding, StaveModifier.Position.END);
-    return this;
-  }
+    addEndClef(clef, size, annotation) {
+        this.addClef(clef, size, annotation, StaveModifier.Position.END);
+        return this;
+    }
+
+    addTimeSignature(timeSpec, customPadding, position) {
+        this.addModifier(new TimeSignature(timeSpec, customPadding), position);
+        return this;
+    }
+
+    addEndTimeSignature(timeSpec, customPadding) {
+        this.addTimeSignature(timeSpec, customPadding, StaveModifier.Position.END);
+        return this;
+    }
 
   // Deprecated
-  addTrebleGlyph() {
-    this.addClef('treble');
-    return this;
-  }
+    addTrebleGlyph() {
+        this.addClef('treble');
+        return this;
+    }
 
-  getModifiers(position, category) {
-    if (position === undefined) return this.modifiers;
+    getModifiers(position, category) {
+        if (position === undefined) return this.modifiers;
 
-    return this.modifiers.filter(modifier =>
+        return this.modifiers.filter(modifier =>
       position === modifier.getPosition() &&
       (category === undefined || category === modifier.getCategory())
     );
-  }
+    }
 
-  sortByCategory(items, order) {
-    for (let i = items.length - 1; i >= 0; i--) {
-      for (let j = 0; j < i; j++) {
-        if (order[items[j].getCategory()] > order[items[j + 1].getCategory()]) {
-          const temp = items[j];
-          items[j] = items[j + 1];
-          items[j + 1] = temp;
+    sortByCategory(items, order) {
+        for (let i = items.length - 1; i >= 0; i--) {
+            for (let j = 0; j < i; j++) {
+                if (order[items[j].getCategory()] > order[items[j + 1].getCategory()]) {
+                    const temp = items[j];
+                    items[j] = items[j + 1];
+                    items[j + 1] = temp;
+                }
+            }
         }
-      }
     }
-  }
 
-  format() {
-    const begBarline = this.modifiers[0];
-    const endBarline = this.modifiers[1];
+    format() {
+        const begBarline = this.modifiers[0];
+        const endBarline = this.modifiers[1];
 
-    const begModifiers = this.getModifiers(StaveModifier.Position.BEGIN);
-    const endModifiers = this.getModifiers(StaveModifier.Position.END);
+        const begModifiers = this.getModifiers(StaveModifier.Position.BEGIN);
+        const endModifiers = this.getModifiers(StaveModifier.Position.END);
 
-    this.sortByCategory(begModifiers, {
-      barlines: 0, clefs: 1, keysignatures: 2, timesignatures: 3,
-    });
+        this.sortByCategory(begModifiers, {
+            barlines: 0, clefs: 1, keysignatures: 2, timesignatures: 3,
+        });
 
-    this.sortByCategory(endModifiers, {
-      timesignatures: 0, keysignatures: 1, barlines: 2, clefs: 3,
-    });
+        this.sortByCategory(endModifiers, {
+            timesignatures: 0, keysignatures: 1, barlines: 2, clefs: 3,
+        });
 
-    if (begModifiers.length > 1 &&
+        if (begModifiers.length > 1 &&
         begBarline.getType() === Barline.type.REPEAT_BEGIN) {
-      begModifiers.push(begModifiers.splice(0, 1)[0]);
-      begModifiers.splice(0, 0, new Barline(Barline.type.SINGLE));
+            begModifiers.push(begModifiers.splice(0, 1)[0]);
+            begModifiers.splice(0, 0, new Barline(Barline.type.SINGLE));
+        }
+
+        if (endModifiers.indexOf(endBarline) > 0) {
+            endModifiers.splice(0, 0, new Barline(Barline.type.NONE));
+        }
+
+        let width;
+        let padding;
+        let modifier;
+        let offset = 0;
+        let x = this.x;
+        for (let i = 0; i < begModifiers.length; i++) {
+            modifier = begModifiers[i];
+            padding = modifier.getPadding(i + offset);
+            width = modifier.getWidth();
+
+            x += padding;
+            modifier.setX(x);
+            x += width;
+
+            if (padding + width === 0) offset--;
+        }
+
+        this.start_x = x;
+        x = this.x + this.width;
+
+        for (let i = 0; i < endModifiers.length; i++) {
+            modifier = endModifiers[i];
+            x -= modifier.getPadding(i);
+            if (i !== 0) {
+                x -= modifier.getWidth();
+            }
+
+            modifier.setX(x);
+
+            if (i === 0) {
+                x -= modifier.getWidth();
+            }
+        }
+
+        this.end_x = endModifiers.length === 1 ? this.x + this.width : x;
+        this.formatted = true;
     }
-
-    if (endModifiers.indexOf(endBarline) > 0) {
-      endModifiers.splice(0, 0, new Barline(Barline.type.NONE));
-    }
-
-    let width;
-    let padding;
-    let modifier;
-    let offset = 0;
-    let x = this.x;
-    for (let i = 0; i < begModifiers.length; i++) {
-      modifier = begModifiers[i];
-      padding = modifier.getPadding(i + offset);
-      width = modifier.getWidth();
-
-      x += padding;
-      modifier.setX(x);
-      x += width;
-
-      if (padding + width === 0) offset--;
-    }
-
-    this.start_x = x;
-    x = this.x + this.width;
-
-    for (let i = 0; i < endModifiers.length; i++) {
-      modifier = endModifiers[i];
-      x -= modifier.getPadding(i);
-      if (i !== 0) {
-        x -= modifier.getWidth();
-      }
-
-      modifier.setX(x);
-
-      if (i === 0) {
-        x -= modifier.getWidth();
-      }
-    }
-
-    this.end_x = endModifiers.length === 1 ? this.x + this.width : x;
-    this.formatted = true;
-  }
 
   /**
    * All drawing functions below need the context to be set.
    */
-  draw() {
-    this.checkContext();
-    this.setRendered();
+    draw() {
+        this.checkContext();
+        this.setRendered();
 
-    if (!this.formatted) this.format();
+        if (!this.formatted) this.format();
 
-    const num_lines = this.options.num_lines;
-    const width = this.width;
-    const x = this.x;
-    let y;
+        const num_lines = this.options.num_lines;
+        const width = this.width;
+        const x = this.x;
+        let y;
 
     // Render lines
-    for (let line = 0; line < num_lines; line++) {
-      y = this.getYForLine(line);
+        for (let line = 0; line < num_lines; line++) {
+            y = this.getYForLine(line);
 
-      this.context.save();
-      this.context.setFillStyle(this.options.fill_style);
-      this.context.setStrokeStyle(this.options.fill_style);
-      this.context.setLineWidth(Flow.STAVE_LINE_THICKNESS);
-      if (this.options.line_config[line].visible) {
-        this.context.beginPath();
-        this.context.moveTo(x, y);
-        this.context.lineTo(x + width, y);
-        this.context.stroke();
-      }
-      this.context.restore();
-    }
+            this.context.save();
+            this.context.setFillStyle(this.options.fill_style);
+            this.context.setStrokeStyle(this.options.fill_style);
+            this.context.setLineWidth(Flow.STAVE_LINE_THICKNESS);
+            if (this.options.line_config[line].visible) {
+                this.context.beginPath();
+                this.context.moveTo(x, y);
+                this.context.lineTo(x + width, y);
+                this.context.stroke();
+            }
+            this.context.restore();
+        }
 
     // Draw the modifiers (bar lines, coda, segno, repeat brackets, etc.)
-    for (let i = 0; i < this.modifiers.length; i++) {
+        for (let i = 0; i < this.modifiers.length; i++) {
       // Only draw modifier if it has a draw function
-      if (typeof this.modifiers[i].draw === 'function') {
-        this.modifiers[i].draw(this, this.getModifierXShift(i));
-      }
-    }
+            if (typeof this.modifiers[i].draw === 'function') {
+                this.modifiers[i].draw(this, this.getModifierXShift(i));
+            }
+        }
 
     // Render measure numbers
-    if (this.measure > 0) {
-      this.context.save();
-      this.context.setFont(this.font.family, this.font.size, this.font.weight);
-      const text_width = this.context.measureText('' + this.measure).width;
-      y = this.getYForTopText(0) + 3;
-      this.context.fillText('' + this.measure, this.x - text_width / 2, y);
-      this.context.restore();
-    }
+        if (this.measure > 0) {
+            this.context.save();
+            this.context.setFont(this.font.family, this.font.size, this.font.weight);
+            const text_width = this.context.measureText('' + this.measure).width;
+            y = this.getYForTopText(0) + 3;
+            this.context.fillText('' + this.measure, this.x - text_width / 2, y);
+            this.context.restore();
+        }
 
-    return this;
-  }
+        return this;
+    }
 
   // Draw Simple barlines for backward compatability
   // Do not delete - draws the beginning bar of the stave
-  drawVertical(x, isDouble) {
-    this.drawVerticalFixed(this.x + x, isDouble);
-  }
-
-  drawVerticalFixed(x, isDouble) {
-    this.checkContext();
-
-    const top_line = this.getYForLine(0);
-    const bottom_line = this.getYForLine(this.options.num_lines - 1);
-    if (isDouble) {
-      this.context.fillRect(x - 3, top_line, 1, bottom_line - top_line + 1);
+    drawVertical(x, isDouble) {
+        this.drawVerticalFixed(this.x + x, isDouble);
     }
-    this.context.fillRect(x, top_line, 1, bottom_line - top_line + 1);
-  }
 
-  drawVerticalBar(x) {
-    this.drawVerticalBarFixed(this.x + x, false);
-  }
+    drawVerticalFixed(x, isDouble) {
+        this.checkContext();
 
-  drawVerticalBarFixed(x) {
-    this.checkContext();
+        const top_line = this.getYForLine(0);
+        const bottom_line = this.getYForLine(this.options.num_lines - 1);
+        if (isDouble) {
+            this.context.fillRect(x - 3, top_line, 1, bottom_line - top_line + 1);
+        }
+        this.context.fillRect(x, top_line, 1, bottom_line - top_line + 1);
+    }
 
-    const top_line = this.getYForLine(0);
-    const bottom_line = this.getYForLine(this.options.num_lines - 1);
-    this.context.fillRect(x, top_line, 1, bottom_line - top_line + 1);
-  }
+    drawVerticalBar(x) {
+        this.drawVerticalBarFixed(this.x + x, false);
+    }
+
+    drawVerticalBarFixed(x) {
+        this.checkContext();
+
+        const top_line = this.getYForLine(0);
+        const bottom_line = this.getYForLine(this.options.num_lines - 1);
+        this.context.fillRect(x, top_line, 1, bottom_line - top_line + 1);
+    }
 
   /**
    * Get the current configuration for the Stave.
    * @return {Array} An array of configuration objects.
    */
-  getConfigForLines() {
-    return this.options.line_config;
-  }
+    getConfigForLines() {
+        return this.options.line_config;
+    }
 
   /**
    * Configure properties of the lines in the Stave
@@ -582,32 +594,32 @@ export class Stave extends Element {
    * @throws Vex.RERR "StaveConfigError" When the specified line number is out of
    *   range of the number of lines specified in the constructor.
    */
-  setConfigForLine(line_number, line_config) {
-    if (line_number >= this.options.num_lines || line_number < 0) {
-      throw new Vex.RERR(
+    setConfigForLine(line_number, line_config) {
+        if (line_number >= this.options.num_lines || line_number < 0) {
+            throw new Vex.RERR(
         'StaveConfigError',
         'The line number must be within the range of the number of lines in the Stave.'
       );
-    }
+        }
 
-    if (line_config.visible === undefined) {
-      throw new Vex.RERR(
+        if (line_config.visible === undefined) {
+            throw new Vex.RERR(
         'StaveConfigError',
         "The line configuration object is missing the 'visible' property."
       );
-    }
+        }
 
-    if (typeof(line_config.visible) !== 'boolean') {
-      throw new Vex.RERR(
+        if (typeof(line_config.visible) !== 'boolean') {
+            throw new Vex.RERR(
         'StaveConfigError',
         "The line configuration objects 'visible' property must be true or false."
       );
+        }
+
+        this.options.line_config[line_number] = line_config;
+
+        return this;
     }
-
-    this.options.line_config[line_number] = line_config;
-
-    return this;
-  }
 
   /**
    * Set the staff line configuration array for all of the lines at once.
@@ -618,177 +630,177 @@ export class Stave extends Element {
    *   exactly the same number of elements as the num_lines configuration object set in
    *   the constructor.
    */
-  setConfigForLines(lines_configuration) {
-    if (lines_configuration.length !== this.options.num_lines) {
-      throw new Vex.RERR(
+    setConfigForLines(lines_configuration) {
+        if (lines_configuration.length !== this.options.num_lines) {
+            throw new Vex.RERR(
         'StaveConfigError',
         'The length of the lines configuration array must match the number of lines in the Stave'
       );
-    }
+        }
 
     // Make sure the defaults are present in case an incomplete set of
     //  configuration options were supplied.
-    for (const line_config in lines_configuration) {
+        for (const line_config in lines_configuration) {
       // Allow 'null' to be used if the caller just wants the default for a particular node.
-      if (!lines_configuration[line_config]) {
-        lines_configuration[line_config] = this.options.line_config[line_config];
-      }
-      Vex.Merge(this.options.line_config[line_config], lines_configuration[line_config]);
+            if (!lines_configuration[line_config]) {
+                lines_configuration[line_config] = this.options.line_config[line_config];
+            }
+            Vex.Merge(this.options.line_config[line_config], lines_configuration[line_config]);
+        }
+
+        this.options.line_config = lines_configuration;
+
+        return this;
     }
-
-    this.options.line_config = lines_configuration;
-
-    return this;
-  }
 
   /*
    * Vex.Flow.Stave extensions
    */
 
-  setTickables(tickables) {
-    this.tickables = tickables;
-  }
-
-  getTickables() {
-    return this.tickables;
-  }
-
-  getNotes() {
-    const notes = [];
-
-    for (let i = 0; i < this.tickables.length; i++) {
-      const tickable = this.tickables[i];
-      if (tickable instanceof Vex.Flow.StaveNote) {
-        notes.push(tickable);
-      }
+    setTickables(tickables) {
+        this.tickables = tickables;
     }
 
-    return notes;
-  }
+    getTickables() {
+        return this.tickables;
+    }
 
-  insertTickableBetween(newTickable, previousTickable, nextTickable) {
-    if (newTickable instanceof Vex.Flow.ClefNote) {
+    getNotes() {
+        const notes = [];
+
+        for (let i = 0; i < this.tickables.length; i++) {
+            const tickable = this.tickables[i];
+            if (tickable instanceof Vex.Flow.StaveNote) {
+                notes.push(tickable);
+            }
+        }
+
+        return notes;
+    }
+
+    insertTickableBetween(newTickable, previousTickable, nextTickable) {
+        if (newTickable instanceof Vex.Flow.ClefNote) {
       // If the stave has no clef modifiers, then add it.
-      if (this.getClefModifierIndex() < 0) {
-        this.addClef(newTickable.clefKey);
+            if (this.getClefModifierIndex() < 0) {
+                this.addClef(newTickable.clefKey);
         // If the stave already has a clef, but the user clicked before any
         // other tickable, then replace the stave clef
-        return;
-      } else if (previousTickable == null) {
-        this.replaceClef(newTickable.clefKey);
+                return;
+            } else if (previousTickable == null) {
+                this.replaceClef(newTickable.clefKey);
         // Else add it as a normal ClefNote as long as the stave already has
         // notes, so leave otherwise
-        return;
-      } else if (this.getNotes().length === 0) {
-        return;
-      }
-    } else if (newTickable instanceof Vex.Flow.BarNote) {
+                return;
+            } else if (this.getNotes().length === 0) {
+                return;
+            }
+        } else if (newTickable instanceof Vex.Flow.BarNote) {
       // If the BarNote is to be inserted after everything, then modify the end bar of the stave
-      if (nextTickable == null) {
-        this.setEndBarType(newTickable.type);
+            if (nextTickable == null) {
+                this.setEndBarType(newTickable.type);
         // Else add it as a normal BarNote as long as the stave already has notes, so leave
         // otherwise
-        return;
-      } else if (this.getNotes().length === 0) {
-        return;
-      }
+                return;
+            } else if (this.getNotes().length === 0) {
+                return;
+            }
+        }
+
+        if (nextTickable == null) {
+            this.pushTickable(newTickable);
+        } else {
+            const referenceIndex = this.tickables.indexOf(nextTickable);
+            this.tickables.splice(referenceIndex, 0, newTickable);
+        }
     }
 
-    if (nextTickable == null) {
-      this.pushTickable(newTickable);
-    } else {
-      const referenceIndex = this.tickables.indexOf(nextTickable);
-      this.tickables.splice(referenceIndex, 0, newTickable);
-    }
-  }
-
-  getClefModifierIndex() {
+    getClefModifierIndex() {
     // Remove all clefs currently in the stave
-    for (let i = 0; i < this.modifiers.length; i++) {
-      const modifier = this.modifiers[i];
+        for (let i = 0; i < this.modifiers.length; i++) {
+            const modifier = this.modifiers[i];
 
-      if (modifier instanceof Vex.Flow.Clef) {
-        return i;
-      }
+            if (modifier instanceof Vex.Flow.Clef) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
-    return -1;
-  }
-
-  replaceClef(clef) {
-    const start_X = this.start_x;
-    this.clef = clef;
+    replaceClef(clef) {
+        const start_X = this.start_x;
+        this.clef = clef;
     // const modifier = new Vex.Flow.Clef(clef);
-    this.modifiers.splice(this.getClefModifierIndex(), 1);
-    this.glyphs = [];
-    this.addClef(clef);
+        this.modifiers.splice(this.getClefModifierIndex(), 1);
+        this.glyphs = [];
+        this.addClef(clef);
 
-    this.start_x = start_X;
-  }
-
-  getPreviousTickable(referenceTickable) {
-    const referenceIndex = this.tickables.indexOf(referenceTickable);
-    if (referenceIndex === 0) {
-      return null;
+        this.start_x = start_X;
     }
 
-    return this.tickables[referenceIndex - 1];
-  }
+    getPreviousTickable(referenceTickable) {
+        const referenceIndex = this.tickables.indexOf(referenceTickable);
+        if (referenceIndex === 0) {
+            return null;
+        }
 
-  getNextTickable(referenceTickable) {
-    const referenceIndex = this.tickables.indexOf(referenceTickable);
-    if (referenceIndex === this.tickables.length - 1) {
-      return null;
+        return this.tickables[referenceIndex - 1];
     }
 
-    return this.tickables[referenceIndex + 1];
-  }
+    getNextTickable(referenceTickable) {
+        const referenceIndex = this.tickables.indexOf(referenceTickable);
+        if (referenceIndex === this.tickables.length - 1) {
+            return null;
+        }
 
-  getNextNote(referenceNote) {
-    let referenceIndex = this.tickables.indexOf(referenceNote);
-    while (referenceIndex < this.tickables.length) {
-      referenceIndex++;
-      if (this.tickables[referenceIndex] instanceof Vex.Flow.StaveNote) {
-        return this.tickables[referenceIndex];
-      }
+        return this.tickables[referenceIndex + 1];
     }
 
-    return null;
-  }
+    getNextNote(referenceNote) {
+        let referenceIndex = this.tickables.indexOf(referenceNote);
+        while (referenceIndex < this.tickables.length) {
+            referenceIndex++;
+            if (this.tickables[referenceIndex] instanceof Vex.Flow.StaveNote) {
+                return this.tickables[referenceIndex];
+            }
+        }
 
-  replaceTickable(oldTickable, newTickable) {
+        return null;
+    }
+
+    replaceTickable(oldTickable, newTickable) {
     // Replacing note in beam.
-    if (oldTickable.beam != null) {
-      const beam = oldTickable.beam;
-      const referenceIndex = beam.tickables.indexOf(oldTickable);
-      beam.notes[referenceIndex] = newTickable;
+        if (oldTickable.beam != null) {
+            const beam = oldTickable.beam;
+            const referenceIndex = beam.tickables.indexOf(oldTickable);
+            beam.notes[referenceIndex] = newTickable;
+        }
+
+        const referenceIndex = this.tickables.indexOf(oldTickable);
+        this.tickables[referenceIndex] = newTickable;
     }
 
-    const referenceIndex = this.tickables.indexOf(oldTickable);
-    this.tickables[referenceIndex] = newTickable;
-  }
+    removeTickable(tickable) {
+        this.tickables.splice(this.tickables.indexOf(tickable), 1);
+    }
 
-  removeTickable(tickable) {
-    this.tickables.splice(this.tickables.indexOf(tickable), 1);
-  }
+    removeAllTickables() {
+        this.tickables = [];
+    }
 
-  removeAllTickables() {
-    this.tickables = [];
-  }
+    pushTickable(newTickable) {
+        this.tickables.push(newTickable);
+    }
 
-  pushTickable(newTickable) {
-    this.tickables.push(newTickable);
-  }
+    setBeams(beamList) {
+        this.beams = beamList;
+    }
 
-  setBeams(beamList) {
-    this.beams = beamList;
-  }
+    getBeams() {
+        return this.beams;
+    }
 
-  getBeams() {
-    return this.beams;
-  }
-
-  pushBeam(newBeam) {
-    this.beams.push(newBeam);
-  }
+    pushBeam(newBeam) {
+        this.beams.push(newBeam);
+    }
 }
