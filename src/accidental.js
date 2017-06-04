@@ -57,7 +57,6 @@ export class Accidental extends Modifier {
                 const lineSpace = stave.options.spacing_between_lines_px;
                 const y = stave.getYForLine(props.line);
                 const accLine = Math.round(y / lineSpace * 2) / 2;
-                // console.log({ y, line: accLine, shift: shiftL, acc, lineSpace });
                 accList.push({ y, line: accLine, shift: shiftL, acc, lineSpace });
             } else {
                 accList.push({ line: props.line, shift: shiftL, acc });
