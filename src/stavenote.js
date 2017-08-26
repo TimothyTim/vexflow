@@ -1255,60 +1255,38 @@ export class StaveNote extends StemmableNote {
     getPlayEvents(playInfo) {
         // Prepare the notes to be sent
         const notes = [];
+        const { noteValues } = Vex.Flow.Music;
 
         for (let i = 0; i < this.keys.length; i++) {
-            let key = this.keys[i].replace('/', '');
-            key = key.replace('#', '');
-            key = key.replace('##', '');
-            key = key.replace('b', '');
-            key = key.replace('bb', '');
-            key = key.replace('n', '');
-            notes.push(MIDI.keyToNote[key]);
+            let [noteName, octave] = this.keys[i].split("/");
+            noteName = noteName.trim().toLowerCase();
+            const note_value = noteValues[noteName];
+
+            if (note_value == null) {
+                return;
+            }
+
+            const midi_note = (octave * 12) + note_value.int_val;
+            console.log(midi_note);
+            notes.push(midi_note);
         }
 
         // Set clef offset for notes
-        for (let i = 0; i < notes.length; i++) {
-            notes[i] += ClefOffsets[playInfo.clef];
-        }
+        // for (let i = 0; i < notes.length; i++) {
+        //     notes[i] += ClefOffsets[playInfo.clef];
+        // }
 
         let keyPressTime = playInfo.defaultTime / this.duration;
 
         // Set the modifiers for this note (update note value)
         for (let i = 0; i < this.modifiers.length; i++) {
             const modifier = this.modifiers[i];
-            if (modifier instanceof Vex.Flow.Accidental) {
-                let modValue;
-
-                switch (modifier.type) {
-                case 'bb':
-                    modValue = -2;
-                    break;
-                case 'b':
-                    modValue = -1;
-                    break;
-                case 'n':
-                    modValue = 0;
-                    break;
-                case '#':
-                    modValue = 1;
-                    break;
-                case '##':
-                    modValue = 2;
-                    break;
-                default:
-                    break;
-                }
-
-                notes[modifier.index] += modValue;
-            } else if (modifier instanceof Vex.Flow.Dot) {
+            if (modifier.attrs.type === 'Dot') {
                 keyPressTime *= 1.5;
             }
         }
 
-        //  velocity is set as 127
-
         const events = [];
-
         events.push({
             type: 'channel',
             channel: 0,

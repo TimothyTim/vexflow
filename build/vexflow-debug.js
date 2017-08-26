@@ -7634,6 +7634,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.StaveNote = undefined;
 	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
 	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
@@ -9092,60 +9094,43 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function getPlayEvents(playInfo) {
 	            // Prepare the notes to be sent
 	            var notes = [];
+	            var noteValues = _vex.Vex.Flow.Music.noteValues;
+	
 	
 	            for (var i = 0; i < this.keys.length; i++) {
-	                var key = this.keys[i].replace('/', '');
-	                key = key.replace('#', '');
-	                key = key.replace('##', '');
-	                key = key.replace('b', '');
-	                key = key.replace('bb', '');
-	                key = key.replace('n', '');
-	                notes.push(MIDI.keyToNote[key]);
+	                var _keys$i$split = this.keys[i].split("/"),
+	                    _keys$i$split2 = _slicedToArray(_keys$i$split, 2),
+	                    noteName = _keys$i$split2[0],
+	                    octave = _keys$i$split2[1];
+	
+	                noteName = noteName.trim().toLowerCase();
+	                var note_value = noteValues[noteName];
+	
+	                if (note_value == null) {
+	                    return;
+	                }
+	
+	                var midi_note = octave * 12 + note_value.int_val;
+	                console.log(midi_note);
+	                notes.push(midi_note);
 	            }
 	
 	            // Set clef offset for notes
-	            for (var _i2 = 0; _i2 < notes.length; _i2++) {
-	                notes[_i2] += ClefOffsets[playInfo.clef];
-	            }
+	            // for (let i = 0; i < notes.length; i++) {
+	            //     notes[i] += ClefOffsets[playInfo.clef];
+	            // }
 	
 	            var keyPressTime = playInfo.defaultTime / this.duration;
 	
 	            // Set the modifiers for this note (update note value)
-	            for (var _i3 = 0; _i3 < this.modifiers.length; _i3++) {
-	                var modifier = this.modifiers[_i3];
-	                if (modifier instanceof _vex.Vex.Flow.Accidental) {
-	                    var modValue = void 0;
-	
-	                    switch (modifier.type) {
-	                        case 'bb':
-	                            modValue = -2;
-	                            break;
-	                        case 'b':
-	                            modValue = -1;
-	                            break;
-	                        case 'n':
-	                            modValue = 0;
-	                            break;
-	                        case '#':
-	                            modValue = 1;
-	                            break;
-	                        case '##':
-	                            modValue = 2;
-	                            break;
-	                        default:
-	                            break;
-	                    }
-	
-	                    notes[modifier.index] += modValue;
-	                } else if (modifier instanceof _vex.Vex.Flow.Dot) {
+	            for (var _i2 = 0; _i2 < this.modifiers.length; _i2++) {
+	                var modifier = this.modifiers[_i2];
+	                if (modifier.attrs.type === 'Dot') {
 	                    keyPressTime *= 1.5;
 	                }
 	            }
 	
-	            //  velocity is set as 127
-	
 	            var events = [];
-	
 	            events.push({
 	                type: 'channel',
 	                channel: 0,
@@ -11665,7 +11650,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    var lineSpace = stave.options.spacing_between_lines_px;
 	                    var y = stave.getYForLine(props.line);
 	                    var accLine = Math.round(y / lineSpace * 2) / 2;
-	                    // console.log({ y, line: accLine, shift: shiftL, acc, lineSpace });
 	                    accList.push({ y: y, line: accLine, shift: shiftL, acc: acc, lineSpace: lineSpace });
 	                } else {
 	                    accList.push({ line: props.line, shift: shiftL, acc: acc });
