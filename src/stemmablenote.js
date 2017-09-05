@@ -101,7 +101,7 @@ export class StemmableNote extends Note {
       this.stem.setExtension(this.getStemExtension());
     }
 
-    this.reset();
+    // this.reset(); // this seemed to stop the noteheads from restyling on playback
     if (this.flag) {
       this.buildFlag();
     }

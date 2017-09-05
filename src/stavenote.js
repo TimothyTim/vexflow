@@ -815,8 +815,10 @@ export class StaveNote extends StemmableNote {
   // Sets the style of the complete StaveNote, including all keys
   // and the stem.
     setStyle(style) {
-        this.note_heads.forEach(notehead => notehead.setStyle(style));
-        this.stem.setStyle(style);
+        this.note_heads.forEach(notehead => {
+            notehead.setStyle(style);
+        });
+        // this.stem.setStyle(style);
     }
 
   // Sets the notehead at `index` to the provided coloring `style`.
@@ -1230,9 +1232,6 @@ export class StaveNote extends StemmableNote {
 
         const newNote = new Vex.Flow.StaveNote(mergedProps);
 
-        // Setting the style as the same style as the note head
-        newNote.setStyle(this.note_heads[0].style);
-
         if (this.modifierContext != null && this.getDots() != null) {
             newNote.addDotToAll();
         }
@@ -1260,15 +1259,24 @@ export class StaveNote extends StemmableNote {
         for (let i = 0; i < this.keys.length; i++) {
             let [noteName, octave] = this.keys[i].split("/");
             noteName = noteName.trim().toLowerCase();
-            const note_value = noteValues[noteName];
+            let note_value = null;
 
-            if (note_value == null) {
+            if (noteName === 'r') {
+                note_value = -1;
+            } else {
+                note_value = noteValues[noteName];
+            }
+
+            if (!note_value) {
                 return;
             }
 
-            const midi_note = (octave * 12) + note_value.int_val;
-            console.log(midi_note);
-            notes.push(midi_note);
+            if (note_value === -1) {
+                notes.push(note_value);
+            } else {
+                const midi_note = (octave * 12) + note_value.int_val;
+                notes.push(midi_note);
+            }
         }
 
         // Set clef offset for notes
@@ -1296,7 +1304,7 @@ export class StaveNote extends StemmableNote {
             noteNumber: notes.length === 1
                 ? notes[0]
                 : notes,
-            velocity: 127,
+            velocity: this.isRest() ? 0 : 127,
             queuedTime: playInfo.delay,
             note: this,
         });

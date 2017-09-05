@@ -8576,9 +8576,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'setStyle',
 	        value: function setStyle(style) {
 	            this.note_heads.forEach(function (notehead) {
-	                return notehead.setStyle(style);
+	                notehead.setStyle(style);
 	            });
-	            this.stem.setStyle(style);
+	            // this.stem.setStyle(style);
 	        }
 	
 	        // Sets the notehead at `index` to the provided coloring `style`.
@@ -9071,9 +9071,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            var newNote = new _vex.Vex.Flow.StaveNote(mergedProps);
 	
-	            // Setting the style as the same style as the note head
-	            newNote.setStyle(this.note_heads[0].style);
-	
 	            if (this.modifierContext != null && this.getDots() != null) {
 	                newNote.addDotToAll();
 	            }
@@ -9104,15 +9101,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    octave = _keys$i$split2[1];
 	
 	                noteName = noteName.trim().toLowerCase();
-	                var note_value = noteValues[noteName];
+	                var note_value = null;
 	
-	                if (note_value == null) {
+	                if (noteName === 'r') {
+	                    note_value = -1;
+	                } else {
+	                    note_value = noteValues[noteName];
+	                }
+	
+	                if (!note_value) {
 	                    return;
 	                }
 	
-	                var midi_note = octave * 12 + note_value.int_val;
-	                console.log(midi_note);
-	                notes.push(midi_note);
+	                if (note_value === -1) {
+	                    notes.push(note_value);
+	                } else {
+	                    var midi_note = octave * 12 + note_value.int_val;
+	                    notes.push(midi_note);
+	                }
 	            }
 	
 	            // Set clef offset for notes
@@ -9136,7 +9142,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                channel: 0,
 	                subtype: notes.length === 1 ? 'noteOn' : 'chordOn',
 	                noteNumber: notes.length === 1 ? notes[0] : notes,
-	                velocity: 127,
+	                velocity: this.isRest() ? 0 : 127,
 	                queuedTime: playInfo.delay,
 	                note: this
 	            });
@@ -9212,7 +9218,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	exports.NoteHead = undefined;
 	
@@ -9247,11 +9253,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// To enable logging for this class. Set `Vex.Flow.NoteHead.DEBUG` to `true`.
 	function L() {
-	  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-	    args[_key] = arguments[_key];
-	  }
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	        args[_key] = arguments[_key];
+	    }
 	
-	  if (NoteHead.DEBUG) _vex.Vex.L('Vex.Flow.NoteHead', args);
+	    if (NoteHead.DEBUG) _vex.Vex.L('Vex.Flow.NoteHead', args);
 	}
 	
 	// Draw slashnote head manually. No glyph exists for this.
@@ -9263,303 +9269,307 @@ return /******/ (function(modules) { // webpackBootstrap
 	// * `y`: the y coordinate to draw at
 	// * `stem_direction`: the direction of the stem
 	function drawSlashNoteHead(ctx, duration, x, y, stem_direction, staveSpace) {
-	  var width = _tables.Flow.SLASH_NOTEHEAD_WIDTH;
-	  ctx.save();
-	  ctx.setLineWidth(_tables.Flow.STEM_WIDTH);
+	    var width = _tables.Flow.SLASH_NOTEHEAD_WIDTH;
+	    ctx.save();
+	    ctx.setLineWidth(_tables.Flow.STEM_WIDTH);
 	
-	  var fill = false;
+	    var fill = false;
 	
-	  if (_tables.Flow.durationToNumber(duration) > 2) {
-	    fill = true;
-	  }
-	
-	  if (!fill) x -= _tables.Flow.STEM_WIDTH / 2 * stem_direction;
-	
-	  ctx.beginPath();
-	  ctx.moveTo(x, y + staveSpace);
-	  ctx.lineTo(x, y + 1);
-	  ctx.lineTo(x + width, y - staveSpace);
-	  ctx.lineTo(x + width, y);
-	  ctx.lineTo(x, y + staveSpace);
-	  ctx.closePath();
-	
-	  if (fill) {
-	    ctx.fill();
-	  } else {
-	    ctx.stroke();
-	  }
-	
-	  if (_tables.Flow.durationToFraction(duration).equals(0.5)) {
-	    var breve_lines = [-3, -1, width + 1, width + 3];
-	    for (var i = 0; i < breve_lines.length; i++) {
-	      ctx.beginPath();
-	      ctx.moveTo(x + breve_lines[i], y - 10);
-	      ctx.lineTo(x + breve_lines[i], y + 11);
-	      ctx.stroke();
+	    if (_tables.Flow.durationToNumber(duration) > 2) {
+	        fill = true;
 	    }
-	  }
 	
-	  ctx.restore();
+	    if (!fill) x -= _tables.Flow.STEM_WIDTH / 2 * stem_direction;
+	
+	    ctx.beginPath();
+	    ctx.moveTo(x, y + staveSpace);
+	    ctx.lineTo(x, y + 1);
+	    ctx.lineTo(x + width, y - staveSpace);
+	    ctx.lineTo(x + width, y);
+	    ctx.lineTo(x, y + staveSpace);
+	    ctx.closePath();
+	
+	    if (fill) {
+	        ctx.fill();
+	    } else {
+	        ctx.stroke();
+	    }
+	
+	    if (_tables.Flow.durationToFraction(duration).equals(0.5)) {
+	        var breve_lines = [-3, -1, width + 1, width + 3];
+	        for (var i = 0; i < breve_lines.length; i++) {
+	            ctx.beginPath();
+	            ctx.moveTo(x + breve_lines[i], y - 10);
+	            ctx.lineTo(x + breve_lines[i], y + 11);
+	            ctx.stroke();
+	        }
+	    }
+	
+	    ctx.restore();
 	}
 	
 	var NoteHead = exports.NoteHead = function (_Note) {
-	  _inherits(NoteHead, _Note);
+	    _inherits(NoteHead, _Note);
 	
-	  _createClass(NoteHead, null, [{
-	    key: 'CATEGORY',
-	    get: function get() {
-	      return 'notehead';
-	    }
-	  }]);
+	    _createClass(NoteHead, null, [{
+	        key: 'CATEGORY',
+	        get: function get() {
+	            return 'notehead';
+	        }
+	    }]);
 	
-	  function NoteHead(head_options) {
-	    _classCallCheck(this, NoteHead);
+	    function NoteHead(head_options) {
+	        _classCallCheck(this, NoteHead);
 	
-	    var _this = _possibleConstructorReturn(this, (NoteHead.__proto__ || Object.getPrototypeOf(NoteHead)).call(this, head_options));
+	        var _this = _possibleConstructorReturn(this, (NoteHead.__proto__ || Object.getPrototypeOf(NoteHead)).call(this, head_options));
 	
-	    _this.setAttribute('type', 'NoteHead');
+	        _this.setAttribute('type', 'NoteHead');
 	
-	    _this.index = head_options.index;
-	    _this.x = head_options.x || 0;
-	    _this.y = head_options.y || 0;
-	    _this.note_type = head_options.note_type;
-	    _this.duration = head_options.duration;
-	    _this.displaced = head_options.displaced || false;
-	    _this.stem_direction = head_options.stem_direction || _stavenote.StaveNote.STEM_UP;
-	    _this.line = head_options.line;
+	        _this.index = head_options.index;
+	        _this.x = head_options.x || 0;
+	        _this.y = head_options.y || 0;
+	        _this.note_type = head_options.note_type;
+	        _this.duration = head_options.duration;
+	        _this.displaced = head_options.displaced || false;
+	        _this.stem_direction = head_options.stem_direction || _stavenote.StaveNote.STEM_UP;
+	        _this.line = head_options.line;
 	
-	    // Get glyph code based on duration and note type. This could be
-	    // regular notes, rests, or other custom codes.
-	    _this.glyph = _tables.Flow.durationToGlyph(_this.duration, _this.note_type);
-	    if (!_this.glyph) {
-	      throw new _vex.Vex.RuntimeError('BadArguments', 'No glyph found for duration \'' + _this.duration + '\' and type \'' + _this.note_type + '\'');
-	    }
-	
-	    _this.glyph_code = _this.glyph.code_head;
-	    _this.x_shift = head_options.x_shift;
-	    if (head_options.custom_glyph_code) {
-	      _this.custom_glyph = true;
-	      _this.glyph_code = head_options.custom_glyph_code;
-	    }
-	
-	    _this.style = head_options.style;
-	    _this.slashed = head_options.slashed;
-	
-	    _vex.Vex.Merge(_this.render_options, {
-	      // font size for note heads
-	      glyph_font_scale: head_options.glyph_font_scale || _tables.Flow.DEFAULT_NOTATION_FONT_SCALE,
-	      // number of stroke px to the left and right of head
-	      stroke_px: 3
-	    });
-	
-	    _this.setWidth(_this.glyph.getWidth(_this.render_options.glyph_font_scale));
-	    return _this;
-	  }
-	
-	  _createClass(NoteHead, [{
-	    key: 'getCategory',
-	    value: function getCategory() {
-	      return NoteHead.CATEGORY;
-	    }
-	
-	    // Get the width of the notehead
-	
-	  }, {
-	    key: 'getWidth',
-	    value: function getWidth() {
-	      return this.width;
-	    }
-	
-	    // Determine if the notehead is displaced
-	
-	  }, {
-	    key: 'isDisplaced',
-	    value: function isDisplaced() {
-	      return this.displaced === true;
-	    }
-	
-	    // Get/set the notehead's style
-	    //
-	    // `style` is an `object` with the following properties: `shadowColor`,
-	    // `shadowBlur`, `fillStyle`, `strokeStyle`
-	
-	  }, {
-	    key: 'getStyle',
-	    value: function getStyle() {
-	      return this.style;
-	    }
-	  }, {
-	    key: 'setStyle',
-	    value: function setStyle(style) {
-	      this.style = style;return this;
-	    }
-	
-	    // Get the glyph data
-	
-	  }, {
-	    key: 'getGlyph',
-	    value: function getGlyph() {
-	      return this.glyph;
-	    }
-	
-	    // Set the X coordinate
-	
-	  }, {
-	    key: 'setX',
-	    value: function setX(x) {
-	      this.x = x;return this;
-	    }
-	
-	    // get/set the Y coordinate
-	
-	  }, {
-	    key: 'getY',
-	    value: function getY() {
-	      return this.y;
-	    }
-	  }, {
-	    key: 'setY',
-	    value: function setY(y) {
-	      this.y = y;return this;
-	    }
-	
-	    // Get/set the stave line the notehead is placed on
-	
-	  }, {
-	    key: 'getLine',
-	    value: function getLine() {
-	      return this.line;
-	    }
-	  }, {
-	    key: 'setLine',
-	    value: function setLine(line) {
-	      this.line = line;return this;
-	    }
-	
-	    // Get the canvas `x` coordinate position of the notehead.
-	
-	  }, {
-	    key: 'getAbsoluteX',
-	    value: function getAbsoluteX() {
-	      // If the note has not been preformatted, then get the static x value
-	      // Otherwise, it's been formatted and we should use it's x value relative
-	      // to its tick context
-	      var x = !this.preFormatted ? this.x : _get(NoteHead.prototype.__proto__ || Object.getPrototypeOf(NoteHead.prototype), 'getAbsoluteX', this).call(this);
-	
-	      // For a more natural displaced notehead, we adjust the displacement amount
-	      // by half the stem width in order to maintain a slight overlap with the stem
-	      var displacementStemAdjustment = _stem.Stem.WIDTH / 2;
-	
-	      return x + (this.displaced ? (this.width - displacementStemAdjustment) * this.stem_direction : 0);
-	    }
-	
-	    // Get the `BoundingBox` for the `NoteHead`
-	
-	  }, {
-	    key: 'getBoundingBox',
-	    value: function getBoundingBox() {
-	      if (!this.preFormatted) {
-	        throw new _vex.Vex.RERR('UnformattedNote', "Can't call getBoundingBox on an unformatted note.");
-	      }
-	
-	      var spacing = this.stave.getSpacingBetweenLines();
-	      var half_spacing = spacing / 2;
-	      var min_y = this.y - half_spacing;
-	
-	      return new _tables.Flow.BoundingBox(this.getAbsoluteX(), min_y, this.width, spacing);
-	    }
-	
-	    // Apply current style to Canvas `context`
-	
-	  }, {
-	    key: 'applyStyle',
-	    value: function applyStyle(context) {
-	      var style = this.getStyle();
-	      if (style.shadowColor) context.setShadowColor(style.shadowColor);
-	      if (style.shadowBlur) context.setShadowBlur(style.shadowBlur);
-	      if (style.fillStyle) context.setFillStyle(style.fillStyle);
-	      if (style.strokeStyle) context.setStrokeStyle(style.strokeStyle);
-	      return this;
-	    }
-	
-	    // Set notehead to a provided `stave`
-	
-	  }, {
-	    key: 'setStave',
-	    value: function setStave(stave) {
-	      var line = this.getLine();
-	
-	      this.stave = stave;
-	      this.setY(stave.getYForNote(line));
-	      this.context = this.stave.context;
-	      return this;
-	    }
-	
-	    // Pre-render formatting
-	
-	  }, {
-	    key: 'preFormat',
-	    value: function preFormat() {
-	      if (this.preFormatted) return this;
-	
-	      var width = this.getWidth() + this.extraLeftPx + this.extraRightPx;
-	
-	      this.setWidth(width);
-	      this.setPreFormatted(true);
-	      return this;
-	    }
-	
-	    // Draw the notehead
-	
-	  }, {
-	    key: 'draw',
-	    value: function draw() {
-	      this.checkContext();
-	      this.setRendered();
-	
-	      var ctx = this.context;
-	      var head_x = this.getAbsoluteX();
-	      var y = this.y;
-	
-	      L("Drawing note head '", this.note_type, this.duration, "' at", head_x, y);
-	
-	      // Begin and end positions for head.
-	      var stem_direction = this.stem_direction;
-	      var glyph_font_scale = this.render_options.glyph_font_scale;
-	      var line = this.line;
-	
-	      // If note above/below the staff, draw the small staff
-	      if (line <= 0 || line >= 6) {
-	        var line_y = y;
-	        var floor = Math.floor(line);
-	        if (line < 0 && floor - line === -0.5) {
-	          line_y -= 5;
-	        } else if (line > 6 && floor - line === -0.5) {
-	          line_y += 5;
+	        // Get glyph code based on duration and note type. This could be
+	        // regular notes, rests, or other custom codes.
+	        _this.glyph = _tables.Flow.durationToGlyph(_this.duration, _this.note_type);
+	        if (!_this.glyph) {
+	            throw new _vex.Vex.RuntimeError('BadArguments', 'No glyph found for duration \'' + _this.duration + '\' and type \'' + _this.note_type + '\'');
 	        }
 	
-	        if (this.note_type !== 'r') {
-	          ctx.fillRect(head_x - this.render_options.stroke_px, line_y, this.getWidth() + this.render_options.stroke_px * 2, 1);
+	        _this.glyph_code = _this.glyph.code_head;
+	        _this.x_shift = head_options.x_shift;
+	        if (head_options.custom_glyph_code) {
+	            _this.custom_glyph = true;
+	            _this.glyph_code = head_options.custom_glyph_code;
 	        }
-	      }
 	
-	      if (this.note_type === 's') {
-	        var staveSpace = this.stave.getSpacingBetweenLines();
-	        drawSlashNoteHead(ctx, this.duration, head_x, y, stem_direction, staveSpace);
-	      } else {
-	        if (this.style) {
-	          ctx.save();
-	          this.applyStyle(ctx);
-	          _glyph.Glyph.renderGlyph(ctx, head_x, y, glyph_font_scale, this.glyph_code);
-	          ctx.restore();
-	        } else {
-	          _glyph.Glyph.renderGlyph(ctx, head_x, y, glyph_font_scale, this.glyph_code);
-	        }
-	      }
+	        _this.style = head_options.style;
+	        _this.slashed = head_options.slashed;
+	
+	        _vex.Vex.Merge(_this.render_options, {
+	            // font size for note heads
+	            glyph_font_scale: head_options.glyph_font_scale || _tables.Flow.DEFAULT_NOTATION_FONT_SCALE,
+	            // number of stroke px to the left and right of head
+	            stroke_px: 3
+	        });
+	
+	        _this.setWidth(_this.glyph.getWidth(_this.render_options.glyph_font_scale));
+	        return _this;
 	    }
-	  }]);
+	
+	    _createClass(NoteHead, [{
+	        key: 'getCategory',
+	        value: function getCategory() {
+	            return NoteHead.CATEGORY;
+	        }
+	
+	        // Get the width of the notehead
+	
+	    }, {
+	        key: 'getWidth',
+	        value: function getWidth() {
+	            return this.width;
+	        }
+	
+	        // Determine if the notehead is displaced
+	
+	    }, {
+	        key: 'isDisplaced',
+	        value: function isDisplaced() {
+	            return this.displaced === true;
+	        }
+	
+	        // Get/set the notehead's style
+	        //
+	        // `style` is an `object` with the following properties: `shadowColor`,
+	        // `shadowBlur`, `fillStyle`, `strokeStyle`
+	
+	    }, {
+	        key: 'getStyle',
+	        value: function getStyle() {
+	            return this.style;
+	        }
+	    }, {
+	        key: 'setStyle',
+	        value: function setStyle(style) {
+	            this.style = style;
+	            return this;
+	        }
+	
+	        // Get the glyph data
+	
+	    }, {
+	        key: 'getGlyph',
+	        value: function getGlyph() {
+	            return this.glyph;
+	        }
+	
+	        // Set the X coordinate
+	
+	    }, {
+	        key: 'setX',
+	        value: function setX(x) {
+	            this.x = x;
+	            return this;
+	        }
+	
+	        // get/set the Y coordinate
+	
+	    }, {
+	        key: 'getY',
+	        value: function getY() {
+	            return this.y;
+	        }
+	    }, {
+	        key: 'setY',
+	        value: function setY(y) {
+	            this.y = y;
+	            return this;
+	        }
+	
+	        // Get/set the stave line the notehead is placed on
+	
+	    }, {
+	        key: 'getLine',
+	        value: function getLine() {
+	            return this.line;
+	        }
+	    }, {
+	        key: 'setLine',
+	        value: function setLine(line) {
+	            this.line = line;
+	            return this;
+	        }
+	
+	        // Get the canvas `x` coordinate position of the notehead.
+	
+	    }, {
+	        key: 'getAbsoluteX',
+	        value: function getAbsoluteX() {
+	            // If the note has not been preformatted, then get the static x value
+	            // Otherwise, it's been formatted and we should use it's x value relative
+	            // to its tick context
+	            var x = !this.preFormatted ? this.x : _get(NoteHead.prototype.__proto__ || Object.getPrototypeOf(NoteHead.prototype), 'getAbsoluteX', this).call(this);
+	
+	            // For a more natural displaced notehead, we adjust the displacement amount
+	            // by half the stem width in order to maintain a slight overlap with the stem
+	            var displacementStemAdjustment = _stem.Stem.WIDTH / 2;
+	
+	            return x + (this.displaced ? (this.width - displacementStemAdjustment) * this.stem_direction : 0);
+	        }
+	
+	        // Get the `BoundingBox` for the `NoteHead`
+	
+	    }, {
+	        key: 'getBoundingBox',
+	        value: function getBoundingBox() {
+	            if (!this.preFormatted) {
+	                throw new _vex.Vex.RERR('UnformattedNote', "Can't call getBoundingBox on an unformatted note.");
+	            }
+	
+	            var spacing = this.stave.getSpacingBetweenLines();
+	            var half_spacing = spacing / 2;
+	            var min_y = this.y - half_spacing;
+	
+	            return new _tables.Flow.BoundingBox(this.getAbsoluteX(), min_y, this.width, spacing);
+	        }
+	
+	        // Apply current style to Canvas `context`
+	
+	    }, {
+	        key: 'applyStyle',
+	        value: function applyStyle(context) {
+	            var style = this.getStyle();
+	            if (style.shadowColor) context.setShadowColor(style.shadowColor);
+	            if (style.shadowBlur) context.setShadowBlur(style.shadowBlur);
+	            if (style.fillStyle) context.setFillStyle(style.fillStyle);
+	            if (style.strokeStyle) context.setStrokeStyle(style.strokeStyle);
+	            return this;
+	        }
+	
+	        // Set notehead to a provided `stave`
+	
+	    }, {
+	        key: 'setStave',
+	        value: function setStave(stave) {
+	            var line = this.getLine();
+	
+	            this.stave = stave;
+	            this.setY(stave.getYForNote(line));
+	            this.context = this.stave.context;
+	            return this;
+	        }
+	
+	        // Pre-render formatting
+	
+	    }, {
+	        key: 'preFormat',
+	        value: function preFormat() {
+	            if (this.preFormatted) return this;
+	
+	            var width = this.getWidth() + this.extraLeftPx + this.extraRightPx;
+	
+	            this.setWidth(width);
+	            this.setPreFormatted(true);
+	            return this;
+	        }
+	
+	        // Draw the notehead
+	
+	    }, {
+	        key: 'draw',
+	        value: function draw() {
+	            this.checkContext();
+	            this.setRendered();
+	
+	            var ctx = this.context;
+	            var head_x = this.getAbsoluteX();
+	            var y = this.y;
+	
+	            L("Drawing note head '", this.note_type, this.duration, "' at", head_x, y);
+	
+	            // Begin and end positions for head.
+	            var stem_direction = this.stem_direction;
+	            var glyph_font_scale = this.render_options.glyph_font_scale;
+	            var line = this.line;
+	
+	            // If note above/below the staff, draw the small staff
+	            if (line <= 0 || line >= 6) {
+	                var line_y = y;
+	                var floor = Math.floor(line);
+	                if (line < 0 && floor - line === -0.5) {
+	                    line_y -= 5;
+	                } else if (line > 6 && floor - line === -0.5) {
+	                    line_y += 5;
+	                }
+	
+	                if (this.note_type !== 'r') {
+	                    ctx.fillRect(head_x - this.render_options.stroke_px, line_y, this.getWidth() + this.render_options.stroke_px * 2, 1);
+	                }
+	            }
+	
+	            if (this.note_type === 's') {
+	                var staveSpace = this.stave.getSpacingBetweenLines();
+	                drawSlashNoteHead(ctx, this.duration, head_x, y, stem_direction, staveSpace);
+	            } else {
+	                if (this.style) {
+	                    ctx.save();
+	                    this.applyStyle(ctx);
+	                    _glyph.Glyph.renderGlyph(ctx, head_x, y, glyph_font_scale, this.glyph_code);
+	                    ctx.restore();
+	                } else {
+	                    _glyph.Glyph.renderGlyph(ctx, head_x, y, glyph_font_scale, this.glyph_code);
+	                }
+	            }
+	        }
+	    }]);
 
-	  return NoteHead;
+	    return NoteHead;
 	}(_note.Note);
 
 /***/ }),
@@ -10606,7 +10616,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.stem.setExtension(this.getStemExtension());
 	      }
 	
-	      this.reset();
+	      // this.reset(); // this seemed to stop the noteheads from restyling on playback
 	      if (this.flag) {
 	        this.buildFlag();
 	      }
